@@ -98,16 +98,17 @@ This project uses GitHub Actions for continuous integration and deployment:
    - Value: [Your npm access token]
    - Click "Add secret"
 
-4. **Validate your package before publishing**:
+4. **Validate your package before publishing** (optional):
    - After pushing your code to GitHub, go to the "Actions" tab
    - Select the "Validate Package" workflow
    - Click "Run workflow"
    - This will build and pack your package without publishing it
    - You can download the packed package as an artifact to inspect it
 
-### Regular Release Process
+### Release Process
 
 1. **Continuous Integration**: Every push to main and pull request is automatically built and tested.
+
 2. **Release Management**: When a new version is ready to be released:
 
    ```bash
@@ -132,11 +133,9 @@ This project uses GitHub Actions for continuous integration and deployment:
    git push && git push --tags
    ```
    
-4. **Create a GitHub Release**:
-   - Go to the GitHub repository
-   - Navigate to "Releases"
-   - Click "Create a new release"
-   - Select the tag you just pushed
-   - GitHub Actions will automatically publish to npm
+   The GitHub Actions workflow will automatically:
+   - Build the project
+   - Publish to npm
+   - Create a GitHub release
 
 The CHANGELOG.md file is used to track all notable changes between versions.
