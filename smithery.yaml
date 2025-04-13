@@ -1,0 +1,26 @@
+# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
+
+startCommand:
+  type: stdio
+  configSchema:
+    # JSON Schema defining the configuration options for the MCP.
+    type: object
+    required:
+      - searxngInstanceUrl
+    properties:
+      searxngInstanceUrl:
+        type: string
+        default: http://localhost:8888
+        description: URL of the SearxNG instance.
+  commandFunction:
+    # A JS function that produces the CLI command based on the given config to start the MCP on stdio.
+    |-
+    (config) => ({
+      command: 'node',
+      args: ['/app/build/index.js'],
+      env: {
+        SEARXNG_INSTANCE_URL: config.searxngInstanceUrl
+      }
+    })
+  exampleConfig:
+    searxngInstanceUrl: http://localhost:8888
