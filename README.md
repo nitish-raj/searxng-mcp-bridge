@@ -1,6 +1,37 @@
 # SearxNG MCP Bridge Server
 
-This is a Model Context Protocol (MCP) server that acts as a bridge to a SearxNG instance. It allows compatible clients (like Roo) to perform searches using a configured SearxNG instance via MCP tools.
+This is a Model Context Protocol (MCP) server that acts as a bridge to a [SearxNG](https://github.com/searxng/searxng) instance. It allows compatible clients (like Roo) to perform searches using a configured SearxNG instance via MCP tools.
+
+## Quick Start (Using from npm)
+
+1. **Set up a SearxNG instance**:
+   ```bash
+   # Using Docker
+   docker run -d -p 8888:8080 --name searxng searxng/searxng
+   ```
+
+2. **Install and run the MCP bridge**:
+   ```bash
+   # Run directly with npx
+   npx @nitish-raj/searxng-mcp-bridge
+   ```
+
+3. **Configure in your MCP settings file**:
+   Add to your MCP settings file (e.g., `~/.vscode-server/data/User/globalStorage/rooveterinaryinc.roo-cline/settings/mcp_settings.json`):
+   ```json
+   {
+     "mcpServers": {
+       "searxng-bridge": {
+         "command": "npx",
+         "args": ["@nitish-raj/searxng-mcp-bridge"],
+         "env": {
+           "SEARXNG_INSTANCE_URL": "http://localhost:8888"
+         },
+         "disabled": false
+       }
+     }
+   }
+   ```
 
 ## Features
 
@@ -15,40 +46,90 @@ This is a Model Context Protocol (MCP) server that acts as a bridge to a SearxNG
 
 ## Installation & Configuration
 
-1.  **Clone the repository (Optional - if not installing via npm later):**
-    ```bash
-    git clone <your-repo-url>
-    cd searxng-mcp-bridge
-    npm install
-    npm run build
-    ```
+### Option 1: Using npm (Recommended)
 
-2.  **Add to MCP Settings:**
-    Add the following configuration to your MCP settings file (e.g., `~/.vscode-server/data/User/globalStorage/rooveterinaryinc.roo-cline/settings/mcp_settings.json`):
+1. **Install the package globally:**
+   ```bash
+   npm install -g @nitish-raj/searxng-mcp-bridge
+   ```
 
-    ```json
-    {
-      "mcpServers": {
-        "...": {},
-        "searxng-bridge": {
-          "command": "node",
-          "args": [
-            "/path/to/searxng-mcp-bridge/build/index.js" // Adjust path if needed
-          ],
-          "env": {
-            // Required: URL of your accessible SearxNG instance
-            "SEARXNG_INSTANCE_URL": "http://your-searxng-instance.example.com"
-          },
-          "disabled": false,
-          "alwaysAllow": ["search"] // Optional: Allow search without confirmation
-        }
-      }
-    }
-    ```
-    *   Replace `/path/to/searxng-mcp-bridge/build/index.js` with the actual path to the built server file.
-    *   **Crucially**, set `SEARXNG_INSTANCE_URL` in the `env` section to the URL of the SearxNG instance the bridge should connect to. If not set, it defaults to `http://localhost:8888`.
+2. **Add to MCP Settings:**
+   Add the following configuration to your MCP settings file (e.g., `~/.vscode-server/data/User/globalStorage/rooveterinaryinc.roo-cline/settings/mcp_settings.json`):
 
-3.  **Restart MCP Client:** Restart the application using MCP (e.g., VS Code with the Roo extension) to load the new server configuration.
+   ```json
+   {
+     "mcpServers": {
+       "searxng-bridge": {
+         "command": "mcp-searxng-bridge",
+         "env": {
+           "SEARXNG_INSTANCE_URL": "http://localhost:8888"
+         },
+         "disabled": false,
+         "alwaysAllow": ["search"] // Optional: Allow search without confirmation
+       }
+     }
+   }
+   ```
+   * **Crucially**, set `SEARXNG_INSTANCE_URL` in the `env` section to the URL of the SearxNG instance the bridge should connect to. If not set, it defaults to `http://localhost:8888`.
+
+### Option 2: From Source
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/nitish-raj/searxng-mcp-bridge.git
+   cd searxng-mcp-bridge
+   npm install
+   npm run build
+   ```
+
+2. **Add to MCP Settings:**
+   Add the following configuration to your MCP settings file:
+   ```json
+   {
+     "mcpServers": {
+       "searxng-bridge": {
+         "command": "node",
+         "args": [
+           "/path/to/searxng-mcp-bridge/build/index.js" // Adjust path if needed
+         ],
+         "env": {
+           "SEARXNG_INSTANCE_URL": "http://localhost:8888"
+         },
+         "disabled": false
+       }
+     }
+   }
+   ```
+   * Replace `/path/to/searxng-mcp-bridge/build/index.js` with the actual path to the built server file.
+
+3. **Restart MCP Client:** Restart the application using MCP (e.g., VS Code with the Roo extension) to load the new server configuration.
+
+## Setting up SearxNG
+
+You need a running SearxNG instance to use this bridge. Here are some options:
+
+1. **Using Docker (Recommended):**
+   ```bash
+   docker run -d -p 8888:8080 --name searxng searxng/searxng
+   ```
+
+2. **Using Docker Compose:**
+   Create a `docker-compose.yml` file:
+   ```yaml
+   version: '3'
+   services:
+     searxng:
+       image: searxng/searxng
+       ports:
+         - "8888:8080"
+       restart: unless-stopped
+   ```
+   Then run:
+   ```bash
+   docker-compose up -d
+   ```
+
+3. **For more advanced configuration options**, refer to the [SearxNG documentation](https://github.com/searxng/searxng).
 
 ## Usage
 
@@ -139,3 +220,47 @@ This project uses GitHub Actions for continuous integration and deployment:
    - Create a GitHub release
 
 The CHANGELOG.md file is used to track all notable changes between versions.
+
+## Roadmap
+
+The following improvements are planned for future releases:
+
+### 0.4.0 (Planned)
+- Enhanced search capabilities:
+  - Support for advanced search parameters (language, time range, categories)
+  - Result pagination
+  - Configurable result formats
+- Fix version inconsistency between package and server
+
+### 0.5.0 (Planned)
+- Additional tools:
+  - Image search tool
+  - News search tool
+  - Query suggestions tool
+- Technical improvements:
+  - Result caching layer
+  - Retry logic for failed requests
+  - Authentication support for protected SearxNG instances
+
+### 0.6.0 (Planned)
+- Developer experience:
+  - Comprehensive test suite
+  - Development mode with verbose logging
+  - Example configurations
+  - TypeScript type definitions for search results
+- Enhanced documentation:
+  - API documentation with examples
+  - Troubleshooting guide
+  - Parameter reference
+
+## Contributing
+
+Contributions are welcome! Here are some ways you can contribute:
+
+- Implement features from the roadmap
+- Report bugs and suggest features
+- Improve documentation
+- Add tests
+- Share your use cases
+
+Please see the GitHub repository for contribution guidelines.
