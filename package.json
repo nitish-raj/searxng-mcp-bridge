@@ -16,7 +16,10 @@
     "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
     "prepare": "npm run build",
     "watch": "tsc --watch",
-    "inspector": "npx @modelcontextprotocol/inspector build/index.js"
+    "inspector": "npx @modelcontextprotocol/inspector build/index.js",
+    "release:major": "node scripts/release.js major",
+    "release:minor": "node scripts/release.js minor",
+    "release:patch": "node scripts/release.js patch"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "0.6.0",
@@ -37,10 +40,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nitish/searxng-mcp-bridge.git" 
+    "url": "git+https://github.com/nitish-raj/searxng-mcp-bridge.git"
   },
   "bugs": {
-    "url": "https://github.com/nitish/searxng-mcp-bridge/issues" 
+    "url": "https://github.com/nitish-raj/searxng-mcp-bridge/issues"
   },
-  "homepage": "https://github.com/nitish/searxng-mcp-bridge#readme" 
+  "homepage": "https://github.com/nitish-raj/searxng-mcp-bridge#readme"
 }

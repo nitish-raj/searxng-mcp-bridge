@@ -1,0 +1,53 @@
+name: Release
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        registry-url: 'https://registry.npmjs.org'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Build
+      run: npm run build
+    
+    - name: Set version from release
+      run: |
+        RELEASE_VERSION=${GITHUB_REF#refs/tags/v}
+        npm version $RELEASE_VERSION --no-git-tag-version
+        echo "Version set to $RELEASE_VERSION"
+    
+    - name: Publish to npm
+      run: npm publish --access public
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+    
+    - name: Generate release notes
+      id: release_notes
+      run: |
+        VERSION=$(node -p "require('./package.json').version")
+        echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
+        echo "## @nitish/searxng-mcp-bridge v$VERSION" >> $GITHUB_ENV
+        echo "" >> $GITHUB_ENV
+        echo "See [CHANGELOG.md](https://github.com/nitish-raj/searxng-mcp-bridge/blob/main/CHANGELOG.md) for details." >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
+    
+    - name: Update release notes
+      uses: softprops/action-gh-release@v1
+      with:
+        body: ${{ env.RELEASE_NOTES }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
