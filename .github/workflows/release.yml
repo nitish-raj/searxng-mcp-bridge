@@ -49,7 +49,7 @@ jobs:
       with:
         name: "v${{ env.VERSION }}"
         body: |
-          ## @nitish/searxng-mcp-bridge v${{ env.VERSION }}
+          ## @nitish-raj/searxng-mcp-bridge v${{ env.VERSION }}
           
           See [CHANGELOG.md](https://github.com/nitish-raj/searxng-mcp-bridge/blob/main/CHANGELOG.md) for details.
         draft: false

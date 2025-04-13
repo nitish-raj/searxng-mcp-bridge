@@ -1,5 +1,5 @@
 {
-  "name": "@nitish/searxng-mcp-bridge",
+  "name": "@nitish-raj/searxng-mcp-bridge",
   "version": "0.2.0",
   "description": "MCP Server for SearxNG Bridge",
   "private": false,
@@ -29,7 +29,7 @@
     "@types/node": "^20.11.24",
     "typescript": "^5.3.3"
   },
-  "author": "nitish",
+  "author": "nitish-raj",
   "license": "MIT",
   "keywords": [
     "mcp",
