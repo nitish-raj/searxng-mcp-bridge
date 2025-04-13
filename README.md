@@ -1,6 +1,6 @@
 # SearxNG MCP Bridge Server
 
-This is a Model Context Protocol (MCP) server that acts as a bridge to a [SearxNG](https://github.com/searxng/searxng) instance. It allows compatible clients (like Roo) to perform searches using a configured SearxNG instance via MCP tools.
+This is a Model Context Protocol (MCP) server that acts as a bridge to a [SearxNG](https://github.com/searxng/searxng) instance. It allows compatible clients to perform searches using a configured SearxNG instance via MCP tools.
 
 ## Quick Start (Using from npm)
 
@@ -221,46 +221,9 @@ This project uses GitHub Actions for continuous integration and deployment:
 
 The CHANGELOG.md file is used to track all notable changes between versions.
 
-## Roadmap
-
-The following improvements are planned for future releases:
-
-### 0.4.0 (Planned)
-- Enhanced search capabilities:
-  - Support for advanced search parameters (language, time range, categories)
-  - Result pagination
-  - Configurable result formats
-- Fix version inconsistency between package and server
-
-### 0.5.0 (Planned)
-- Additional tools:
-  - Image search tool
-  - News search tool
-  - Query suggestions tool
-- Technical improvements:
-  - Result caching layer
-  - Retry logic for failed requests
-  - Authentication support for protected SearxNG instances
-
-### 0.6.0 (Planned)
-- Developer experience:
-  - Comprehensive test suite
-  - Development mode with verbose logging
-  - Example configurations
-  - TypeScript type definitions for search results
-- Enhanced documentation:
-  - API documentation with examples
-  - Troubleshooting guide
-  - Parameter reference
 
 ## Contributing
 
-Contributions are welcome! Here are some ways you can contribute:
-
-- Implement features from the roadmap
-- Report bugs and suggest features
-- Improve documentation
-- Add tests
-- Share your use cases
+Contributions are welcome!
 
 Please see the GitHub repository for contribution guidelines.
