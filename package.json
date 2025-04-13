@@ -1,14 +1,16 @@
 {
-  "name": "searxng-bridge",
+  "name": "@nitish/searxng-mcp-bridge",
   "version": "0.1.0",
-  "description": "MCP Server for SearCNG Bridge",
-  "private": true,
+  "description": "MCP Server for SearxNG Bridge",
+  "private": false,
   "type": "module",
   "bin": {
-    "searxng-bridge": "./build/index.js"
+    "mcp-searxng-bridge": "./build/index.js"
   },
   "files": [
-    "build"
+    "build",
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
@@ -23,5 +25,22 @@
   "devDependencies": {
     "@types/node": "^20.11.24",
     "typescript": "^5.3.3"
-  }
+  },
+  "author": "nitish",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "searxng",
+    "search",
+    "bridge"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nitish/searxng-mcp-bridge.git" 
+  },
+  "bugs": {
+    "url": "https://github.com/nitish/searxng-mcp-bridge/issues" 
+  },
+  "homepage": "https://github.com/nitish/searxng-mcp-bridge#readme" 
 }
