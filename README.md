@@ -61,7 +61,3 @@ Once configured, you can instruct your MCP client (like Roo) to use the tool:
 *   `npm install`: Install dependencies.
 *   `npm run build`: Compile TypeScript to JavaScript.
 *   `npm run watch`: Watch for changes and rebuild automatically.
-
-## License
-
-[Specify License Here - e.g., Apache-2.0]
