@@ -49,6 +49,14 @@ This is a Model Context Protocol (MCP) server that acts as a bridge to a [SearxN
 
 ## Installation & Configuration
 
+### Installing via Smithery
+
+To install searxng-mcp-bridge for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@nitish-raj/searxng-mcp-bridge):
+
+```bash
+npx -y @smithery/cli install @nitish-raj/searxng-mcp-bridge --client claude
+```
+
 ### Option 1: Using npm (Recommended)
 
 1. **Install the package globally:**
