@@ -1,3 +1,5 @@
+[![smithery badge](https://smithery.ai/badge/@nitish-raj/searxng-mcp-bridge)](https://smithery.ai/server/@nitish-raj/searxng-mcp-bridge)
+
 # SearxNG MCP Bridge Server
 
 This is a Model Context Protocol (MCP) server that acts as a bridge to a [SearxNG](https://github.com/searxng/searxng) instance. It allows compatible clients to perform searches using a configured SearxNG instance via MCP tools.
