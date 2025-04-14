@@ -47,15 +47,17 @@ const isValidSearchArgs = (args: any): args is SearchArgs => {
 	return true;
 };
 
-// Read SearxNG URL from environment variable, default to localhost
-const SEARXNG_URL = process.env.SEARXNG_INSTANCE_URL || 'http://localhost:8888';
+// Read SearxNG URL from environment variable. It is mandatory.
+// Users MUST set SEARXNG_INSTANCE_URL to their SearxNG instance (local or public).
+const SEARXNG_URL = process.env.SEARXNG_INSTANCE_URL;
 const DEBUG_MODE = process.env.SEARXNG_BRIDGE_DEBUG === 'true';
 
-// Log a warning if the default URL is being used
-if (!process.env.SEARXNG_INSTANCE_URL) {
-	console.warn(
-		`[SearxNG Bridge] WARNING: SEARXNG_INSTANCE_URL environment variable not set. Defaulting to ${SEARXNG_URL}`
+// Check if the environment variable is set. If not, throw an error.
+if (!SEARXNG_URL) {
+	console.error(
+		'[SearxNG Bridge] ERROR: SEARXNG_INSTANCE_URL environment variable is not set. This is required.'
 	);
+	process.exit(1); // Exit the process if the URL is not configured
 } else {
     console.log(`[SearxNG Bridge] Using SearxNG instance URL: ${SEARXNG_URL}`);
 }

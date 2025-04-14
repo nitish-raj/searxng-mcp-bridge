@@ -28,7 +28,7 @@ This is a Model Context Protocol (MCP) server that acts as a bridge to a [SearxN
          "command": "npx",
          "args": ["@nitish-raj/searxng-mcp-bridge"],
          "env": {
-           "SEARXNG_INSTANCE_URL": "http://localhost:8888"
+           "SEARXNG_INSTANCE_URL": "YOUR_SEARXNG_INSTANCE_URL" # Replace with your instance URL (e.g., http://localhost:8888 or a public one)
          },
          "disabled": false
        }
@@ -73,7 +73,7 @@ npx -y @smithery/cli install @nitish-raj/searxng-mcp-bridge --client claude
        "searxng-bridge": {
          "command": "mcp-searxng-bridge",
          "env": {
-           "SEARXNG_INSTANCE_URL": "http://localhost:8888"
+           "SEARXNG_INSTANCE_URL": "YOUR_SEARXNG_INSTANCE_URL" # Replace with your instance URL (e.g., http://localhost:8888 or a public one)
          },
          "disabled": false,
          "alwaysAllow": ["search"] // Optional: Allow search without confirmation
@@ -81,7 +81,7 @@ npx -y @smithery/cli install @nitish-raj/searxng-mcp-bridge --client claude
      }
    }
    ```
-   * **Crucially**, set `SEARXNG_INSTANCE_URL` in the `env` section to the URL of the SearxNG instance the bridge should connect to. If not set, it defaults to `http://localhost:8888`.
+   * **Crucially**, set the `SEARXNG_INSTANCE_URL` environment variable in the `env` section to the URL of the SearxNG instance the bridge should connect to (e.g., `http://localhost:8888` or a public instance like `https://searx.space/`). **This variable is mandatory.**
 
 ### Option 2: From Source
 
@@ -104,7 +104,7 @@ npx -y @smithery/cli install @nitish-raj/searxng-mcp-bridge --client claude
            "/path/to/searxng-mcp-bridge/build/index.js" // Adjust path if needed
          ],
          "env": {
-           "SEARXNG_INSTANCE_URL": "http://localhost:8888"
+           "SEARXNG_INSTANCE_URL": "YOUR_SEARXNG_INSTANCE_URL" # Replace with your instance URL (e.g., http://localhost:8888 or a public one)
          },
          "disabled": false
        }
