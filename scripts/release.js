@@ -10,11 +10,9 @@ import path from 'path';
 import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 
-// Get the directory name
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
 
-// Determine version bump type
 const bumpType = process.argv[2] || 'patch';
 if (!['major', 'minor', 'patch'].includes(bumpType)) {
   console.error('Invalid version bump type. Use: major, minor, or patch');
@@ -34,11 +32,9 @@ try {
     process.exit(1);
   }
 
-  // Bump version in package.json
   console.log(`Bumping ${bumpType} version...`);
   execSync(`npm version ${bumpType} --no-git-tag-version`, { stdio: 'inherit' });
 
-  // Read the new version
   const packageJson = JSON.parse(fs.readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
   const newVersion = packageJson.version;
   console.log(`New version: ${newVersion}`);
@@ -59,10 +55,9 @@ try {
     process.exit(1);
   }
 
-  // Read the existing changelog
   let existingChangelog = fs.readFileSync(changelogPath, 'utf8');
   
-  // Find the insertion point (the line after the '## [Unreleased]' header)
+  // Find the insertion point after the '## [Unreleased]' header
   const unreleasedHeader = '## [Unreleased]';
   const insertionPointIndex = existingChangelog.indexOf(unreleasedHeader);
   
@@ -71,26 +66,22 @@ try {
     process.exit(1);
   }
   
-  // Find the end of the '## [Unreleased]' line
   const endOfUnreleasedHeaderLine = existingChangelog.indexOf('\n', insertionPointIndex) + 1;
 
-  // Insert the new content after the '[Unreleased]' header line
+  // Insert the generated content after the '[Unreleased]' header line
   const updatedChangelog =
     existingChangelog.substring(0, endOfUnreleasedHeaderLine) +
-    '\n' + // Add a newline for separation
-    newChangelogContent.trim() + '\n' + // Add the generated content
+    '\n' +
+    newChangelogContent.trim() + '\n' +
     existingChangelog.substring(endOfUnreleasedHeaderLine);
 
   fs.writeFileSync(changelogPath, updatedChangelog);
   console.log('Updated CHANGELOG.md with new release section.');
 
-  // Stage changes (including the updated CHANGELOG.md)
   execSync('git add package.json package-lock.json CHANGELOG.md', { cwd: rootDir, stdio: 'inherit' });
   
-  // Commit changes
   execSync(`git commit -m "chore: bump version to ${newVersion}"`, { stdio: 'inherit' });
   
-  // Create tag
   execSync(`git tag v${newVersion}`, { stdio: 'inherit' });
   
   console.log(`\nVersion ${newVersion} prepared!`);

@@ -215,9 +215,9 @@ This project uses GitHub Actions for continuous integration and deployment:
    ```
 
    This will:
-   - Update the version in package.json
-   - Update the CHANGELOG.md
-   - Create a git commit and tag
+   - Update the version in `package.json`.
+   - **Automatically update `CHANGELOG.md`** based on commit messages since the last tag (using `conventional-changelog-cli`). Ensure `conventional-changelog-cli` is installed (`npm install --save-dev conventional-changelog-cli`) and use [Conventional Commits](https://www.conventionalcommits.org/) (e.g., `feat: ...`, `fix: ...`) for meaningful changelog entries.
+   - Create a git commit and tag locally.
    
 3. **Publishing**:
    ```bash
@@ -230,7 +230,7 @@ This project uses GitHub Actions for continuous integration and deployment:
    - Publish to npm
    - Create a GitHub release
 
-The CHANGELOG.md file is used to track all notable changes between versions.
+The `CHANGELOG.md` file is automatically updated by the release script based on conventional commit messages.
 
 
 ## Contributing

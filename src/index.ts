@@ -12,14 +12,13 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-// Read package version from package.json to ensure consistency
+// Get package version
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const packageJsonPath = path.resolve(__dirname, '../package.json');
 const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 const PACKAGE_VERSION = packageJson.version;
 
-// Define the structure of the arguments for the search tool with advanced options
 interface SearchArgs {
 	query: string;
 	language?: string;
@@ -30,13 +29,12 @@ interface SearchArgs {
 	max_results?: number;
 }
 
-// Type guard to check if the arguments match the expected structure
 const isValidSearchArgs = (args: any): args is SearchArgs => {
 	if (typeof args !== 'object' || args === null || typeof args.query !== 'string') {
 		return false;
 	}
 	
-	// Optional parameters validation
+	// Validate optional parameters
 	if (args.language !== undefined && typeof args.language !== 'string') return false;
 	if (args.categories !== undefined && !Array.isArray(args.categories)) return false;
 	if (args.time_range !== undefined && typeof args.time_range !== 'string') return false;
@@ -47,22 +45,19 @@ const isValidSearchArgs = (args: any): args is SearchArgs => {
 	return true;
 };
 
-// Read SearxNG URL from environment variable. It is mandatory.
-// Users MUST set SEARXNG_INSTANCE_URL to their SearxNG instance (local or public).
+// Mandatory: SearxNG instance URL from environment variable
 const SEARXNG_URL = process.env.SEARXNG_INSTANCE_URL;
 const DEBUG_MODE = process.env.SEARXNG_BRIDGE_DEBUG === 'true';
 
-// Check if the environment variable is set. If not, throw an error.
 if (!SEARXNG_URL) {
 	console.error(
 		'[SearxNG Bridge] ERROR: SEARXNG_INSTANCE_URL environment variable is not set. This is required.'
 	);
-	process.exit(1); // Exit the process if the URL is not configured
+	process.exit(1);
 } else {
-    console.log(`[SearxNG Bridge] Using SearxNG instance URL: ${SEARXNG_URL}`);
+	   console.log(`[SearxNG Bridge] Using SearxNG instance URL: ${SEARXNG_URL}`);
 }
 
-// Simple in-memory cache for search results
 interface CacheEntry {
 	timestamp: number;
 	data: any;
@@ -80,22 +75,20 @@ class SearxngBridgeServer {
 		this.server = new Server(
 			{
 				name: 'searxng-bridge',
-				version: PACKAGE_VERSION, // Use version from package.json
+				version: PACKAGE_VERSION,
 				description: 'MCP Server for SearxNG Bridge',
 			},
 			{
 				capabilities: {
-					// No static resources or templates needed for this bridge
 					resources: {},
 					tools: {},
 				},
 			}
 		);
 
-		// Configure axios for SearxNG requests using the determined URL
 		this.axiosInstance = axios.create({
 			baseURL: SEARXNG_URL,
-			timeout: 15000, // 15 second timeout (increased from 10s)
+			timeout: 15000, // 15s timeout
 			headers: {
 				// Add a common browser User-Agent to potentially avoid bot detection
 				'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
@@ -104,15 +97,13 @@ class SearxngBridgeServer {
 
 		this.setupToolHandlers();
 
-		// Basic error handling
 		this.server.onerror = (error) => console.error('[MCP Error]', error);
 		process.on('SIGINT', async () => {
 			await this.server.close();
 			process.exit(0);
 		});
 		
-		// Clean expired cache entries periodically
-		setInterval(() => this.cleanCache(), 60 * 1000); // Clean every minute
+		setInterval(() => this.cleanCache(), 60 * 1000); // Clean cache every minute
 	}
 
 	private cleanCache() {
@@ -132,7 +123,6 @@ class SearxngBridgeServer {
 	}
 
 	private setupToolHandlers() {
-		// Handler for listing available tools
 		this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
 			tools: [
 				{
@@ -179,9 +169,7 @@ class SearxngBridgeServer {
 			],
 		}));
 
-		// Handler for executing the 'search' tool
 		this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
-			// Ensure the correct tool is being called
 			if (request.params.name !== 'search') {
 				throw new McpError(
 					ErrorCode.MethodNotFound,
@@ -189,7 +177,6 @@ class SearxngBridgeServer {
 				);
 			}
 
-			// Validate the arguments provided for the tool
 			if (!isValidSearchArgs(request.params.arguments)) {
 				throw new McpError(
 					ErrorCode.InvalidParams,
@@ -199,19 +186,16 @@ class SearxngBridgeServer {
 
 			const args = request.params.arguments;
 			
-			// Prepare search parameters
 			const searchParams: Record<string, any> = {
 				q: args.query,
 				format: args.format || 'json',
 			};
 			
-			// Add optional parameters if provided
 			if (args.language) searchParams.language = args.language;
 			if (args.categories) searchParams.categories = args.categories.join(',');
 			if (args.time_range) searchParams.time_range = args.time_range;
 			if (args.safesearch !== undefined) searchParams.safesearch = args.safesearch;
 			
-			// Check cache first
 			const cacheKey = this.getCacheKey(searchParams);
 			const cachedResult = this.cache.get(cacheKey);
 			
@@ -220,7 +204,6 @@ class SearxngBridgeServer {
 					console.log(`[SearxNG Bridge] Cache hit for query: ${args.query}`);
 				}
 				
-				// Process cached results with max_results if specified
 				let results = cachedResult.data;
 				if (args.max_results && results.results) {
 					results = {
@@ -239,7 +222,7 @@ class SearxngBridgeServer {
 				};
 			}
 
-			// Not in cache or expired, make the request with retry logic
+			// Not cached or expired, perform search
 			return await this.performSearchWithRetry(searchParams, args.max_results, cacheKey);
 		});
 	}
@@ -257,14 +240,12 @@ class SearxngBridgeServer {
 					console.log(`[SearxNG Bridge] Retry attempt ${attempt} for query: ${searchParams.q}`);
 				}
 				
-				// Make the GET request to SearxNG's search endpoint
 				const response = await this.axiosInstance.get('/search', {
 					params: searchParams,
 				});
 				
 				let results = response.data;
 				
-				// Apply max_results filter if specified
 				if (maxResults && results.results) {
 					results = {
 						...results,
@@ -272,11 +253,10 @@ class SearxngBridgeServer {
 					};
 				}
 				
-				// Cache the results
 				if (cacheKey) {
 					this.cache.set(cacheKey, {
 						timestamp: Date.now(),
-						data: response.data // Cache the full response
+						data: response.data // Cache the full original response
 					});
 					
 					if (DEBUG_MODE) {
@@ -296,20 +276,18 @@ class SearxngBridgeServer {
 				lastError = error;
 				
 				if (attempt < this.MAX_RETRIES) {
-					// Wait before retrying
 					await new Promise(resolve => setTimeout(resolve, this.RETRY_DELAY * attempt));
 				}
 			}
 		}
 		
-		// All retries failed, handle the error
+		// All retries failed
 		let errorMessage = `Failed to fetch search results from SearxNG instance at ${SEARXNG_URL} after ${this.MAX_RETRIES} attempts.`;
 		
 		if (axios.isAxiosError(lastError)) {
 			errorMessage = `SearxNG request error (${SEARXNG_URL}): ${
 				lastError.response?.data?.message || lastError.message
 			}`;
-			// Include status code if available
 			if (lastError.response?.status) {
 				errorMessage += ` (Status: ${lastError.response.status})`;
 			}
@@ -317,7 +295,6 @@ class SearxngBridgeServer {
 			errorMessage = `Unexpected error while contacting ${SEARXNG_URL}: ${lastError.message}`;
 		}
 
-		// Return an error response via MCP
 		return {
 			content: [
 				{
@@ -330,7 +307,6 @@ class SearxngBridgeServer {
 	}
 
 	async run() {
-		// Use Stdio transport for local server communication
 		const transport = new StdioServerTransport();
 		await this.server.connect(transport);
 		console.error(`SearxNG Bridge MCP server v${PACKAGE_VERSION} running on stdio`);
@@ -340,6 +316,5 @@ class SearxngBridgeServer {
 	}
 }
 
-// Create and run the server instance
 const server = new SearxngBridgeServer();
 server.run().catch(console.error);
