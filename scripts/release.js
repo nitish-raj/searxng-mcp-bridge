@@ -10,7 +10,8 @@ import path from 'path';
 import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 
-// Get the directory name
+// Get the directory 
+// ame
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
 
@@ -43,45 +44,21 @@ try {
   const newVersion = packageJson.version;
   console.log(`New version: ${newVersion}`);
 
-  // Update CHANGELOG.md
-  const changelogPath = path.join(rootDir, 'CHANGELOG.md');
-  let changelog = fs.readFileSync(changelogPath, 'utf8');
-  
-  // Get today's date in YYYY-MM-DD format
-  const today = new Date().toISOString().split('T')[0];
-  
-  // Find the [Unreleased] section and extract its content
-  const unreleasedHeader = '## [Unreleased]';
-  const unreleasedHeaderIndex = changelog.indexOf(unreleasedHeader);
-  if (unreleasedHeaderIndex === -1) {
-    console.error('Could not find "## [Unreleased]" section in CHANGELOG.md');
-    process.exit(1);
+  // Update CHANGELOG.md using conventional-changelog
+  console.log('Updating CHANGELOG.md using conventional-changelog...');
+  try {
+    // Ensure conventional-changelog-cli is accessible (npx handles this if installed locally or globally)
+    execSync(`npx conventional-changelog -p angular -i CHANGELOG.md -s -t v`, { cwd: rootDir, stdio: 'inherit' });
+    console.log('Successfully updated CHANGELOG.md');
+  } catch (error) {
+    console.error('Failed to update CHANGELOG.md using conventional-changelog:', error.message);
+    console.error('Make sure conventional-changelog-cli is installed (npm install --save-dev conventional-changelog-cli)');
+    // Optionally exit, or allow proceeding without automatic changelog update
+    // process.exit(1);
   }
 
-  // Find the start of the next release section (or end of file) to determine the end of the unreleased content
-  const nextReleaseHeaderIndex = changelog.indexOf('\n## [', unreleasedHeaderIndex + unreleasedHeader.length);
-  const endOfUnreleasedSection = nextReleaseHeaderIndex === -1 ? changelog.length : nextReleaseHeaderIndex;
-
-  // Extract the content under [Unreleased]
-  const unreleasedContent = changelog.substring(unreleasedHeaderIndex + unreleasedHeader.length, endOfUnreleasedSection).trim();
-
-  // Prepare the new version section with the extracted content
-  const newVersionSection = `## [${newVersion}] - ${today}\n\n${unreleasedContent}`;
-
-  // Prepare the new empty [Unreleased] section template
-  const newUnreleasedSectionTemplate = `## [Unreleased]\n\n### Added\n\n### Changed\n\n### Fixed`;
-
-  // Replace the old [Unreleased] section and its content with the new template followed by the new version section
-  changelog = changelog.substring(0, unreleasedHeaderIndex) +
-              newUnreleasedSectionTemplate + '\n\n' +
-              newVersionSection +
-              changelog.substring(endOfUnreleasedSection);
-  
-  fs.writeFileSync(changelogPath, changelog);
-  console.log('Updated CHANGELOG.md');
-
-  // Stage changes
-  execSync('git add package.json package-lock.json CHANGELOG.md', { stdio: 'inherit' });
+  // Stage changes (including the updated CHANGELOG.md)
+  execSync('git add package.json package-lock.json CHANGELOG.md', { cwd: rootDir, stdio: 'inherit' });
   
   // Commit changes
   execSync(`git commit -m "chore: bump version to ${newVersion}"`, { stdio: 'inherit' });

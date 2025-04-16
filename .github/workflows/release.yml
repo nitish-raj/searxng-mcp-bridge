@@ -53,7 +53,7 @@ jobs:
         body: |
           ## @nitish-raj/searxng-mcp-bridge v${{ env.VERSION }}
           
-          See [CHANGELOG.md](https://github.com/nitish-raj/searxng-mcp-bridge/blob/main/CHANGELOG.md) for details.
+          See [CHANGELOG.md](https://github.com/nitish-raj/searxng-mcp-bridge/blob/master/CHANGELOG.md) for details.
         draft: false
         prerelease: false
       env:
