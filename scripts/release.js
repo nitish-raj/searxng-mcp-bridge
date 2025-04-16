@@ -10,8 +10,7 @@ import path from 'path';
 import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 
-// Get the directory 
-// ame
+// Get the directory name
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
 
@@ -44,18 +43,46 @@ try {
   const newVersion = packageJson.version;
   console.log(`New version: ${newVersion}`);
 
-  // Update CHANGELOG.md using conventional-changelog
-  console.log('Updating CHANGELOG.md using conventional-changelog...');
+  // Update CHANGELOG.md using conventional-changelog and insert correctly
+  console.log('Generating changelog content using conventional-changelog...');
+  const changelogPath = path.join(rootDir, 'CHANGELOG.md');
+  let newChangelogContent = '';
   try {
-    // Ensure conventional-changelog-cli is accessible (npx handles this if installed locally or globally)
-    execSync(`npx conventional-changelog -p angular -i CHANGELOG.md -s -t v`, { cwd: rootDir, stdio: 'inherit' });
-    console.log('Successfully updated CHANGELOG.md');
+    // Generate only the latest release content to stdout
+    // Use -r 1 to generate only the latest tag's content
+    newChangelogContent = execSync(`npx conventional-changelog -p angular -r 1 -t v`, { cwd: rootDir, encoding: 'utf8' });
+    console.log('Successfully generated changelog content.');
   } catch (error) {
-    console.error('Failed to update CHANGELOG.md using conventional-changelog:', error.message);
+    console.error('Failed to generate changelog content using conventional-changelog:', error.message);
     console.error('Make sure conventional-changelog-cli is installed (npm install --save-dev conventional-changelog-cli)');
-    // Optionally exit, or allow proceeding without automatic changelog update
-    // process.exit(1);
+    // Exit if generation fails
+    process.exit(1);
   }
+
+  // Read the existing changelog
+  let existingChangelog = fs.readFileSync(changelogPath, 'utf8');
+  
+  // Find the insertion point (the line after the '## [Unreleased]' header)
+  const unreleasedHeader = '## [Unreleased]';
+  const insertionPointIndex = existingChangelog.indexOf(unreleasedHeader);
+  
+  if (insertionPointIndex === -1) {
+    console.error('Could not find "## [Unreleased]" section header in CHANGELOG.md');
+    process.exit(1);
+  }
+  
+  // Find the end of the '## [Unreleased]' line
+  const endOfUnreleasedHeaderLine = existingChangelog.indexOf('\n', insertionPointIndex) + 1;
+
+  // Insert the new content after the '[Unreleased]' header line
+  const updatedChangelog =
+    existingChangelog.substring(0, endOfUnreleasedHeaderLine) +
+    '\n' + // Add a newline for separation
+    newChangelogContent.trim() + '\n' + // Add the generated content
+    existingChangelog.substring(endOfUnreleasedHeaderLine);
+
+  fs.writeFileSync(changelogPath, updatedChangelog);
+  console.log('Updated CHANGELOG.md with new release section.');
 
   // Stage changes (including the updated CHANGELOG.md)
   execSync('git add package.json package-lock.json CHANGELOG.md', { cwd: rootDir, stdio: 'inherit' });
