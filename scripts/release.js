@@ -50,11 +50,32 @@ try {
   // Get today's date in YYYY-MM-DD format
   const today = new Date().toISOString().split('T')[0];
   
-  // Replace [Unreleased] section with the new version
-  changelog = changelog.replace(
-    '## [Unreleased]',
-    `## [Unreleased]\n\n### Added\n\n### Changed\n\n### Fixed\n\n## [${newVersion}] - ${today}`
-  );
+  // Find the [Unreleased] section and extract its content
+  const unreleasedHeader = '## [Unreleased]';
+  const unreleasedHeaderIndex = changelog.indexOf(unreleasedHeader);
+  if (unreleasedHeaderIndex === -1) {
+    console.error('Could not find "## [Unreleased]" section in CHANGELOG.md');
+    process.exit(1);
+  }
+
+  // Find the start of the next release section (or end of file) to determine the end of the unreleased content
+  const nextReleaseHeaderIndex = changelog.indexOf('\n## [', unreleasedHeaderIndex + unreleasedHeader.length);
+  const endOfUnreleasedSection = nextReleaseHeaderIndex === -1 ? changelog.length : nextReleaseHeaderIndex;
+
+  // Extract the content under [Unreleased]
+  const unreleasedContent = changelog.substring(unreleasedHeaderIndex + unreleasedHeader.length, endOfUnreleasedSection).trim();
+
+  // Prepare the new version section with the extracted content
+  const newVersionSection = `## [${newVersion}] - ${today}\n\n${unreleasedContent}`;
+
+  // Prepare the new empty [Unreleased] section template
+  const newUnreleasedSectionTemplate = `## [Unreleased]\n\n### Added\n\n### Changed\n\n### Fixed`;
+
+  // Replace the old [Unreleased] section and its content with the new template followed by the new version section
+  changelog = changelog.substring(0, unreleasedHeaderIndex) +
+              newUnreleasedSectionTemplate + '\n\n' +
+              newVersionSection +
+              changelog.substring(endOfUnreleasedSection);
   
   fs.writeFileSync(changelogPath, changelog);
   console.log('Updated CHANGELOG.md');
