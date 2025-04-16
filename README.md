@@ -1,13 +1,13 @@
 [![Release](https://github.com/nitish-raj/searxng-mcp-bridge/actions/workflows/release.yml/badge.svg)](https://github.com/nitish-raj/searxng-mcp-bridge/actions/workflows/release.yml)
 [![smithery badge](https://smithery.ai/badge/@nitish-raj/searxng-mcp-bridge)](https://smithery.ai/server/@nitish-raj/searxng-mcp-bridge)
 
-# SearxNG MCP Bridge Server
+# SearXNG MCP Bridge Server
 
-This is a Model Context Protocol (MCP) server that acts as a bridge to a [SearxNG](https://github.com/searxng/searxng) instance. It allows compatible clients to perform searches using a configured SearxNG instance via MCP tools.
+This is a Model Context Protocol (MCP) server that acts as a bridge to a [SearXNG](https://github.com/searxng/searxng) instance. It allows compatible clients to perform searches using a configured SearXNG instance via MCP tools.
 
 ## Quick Start (Using from npm)
 
-1. **Set up a SearxNG instance**:
+1. **Set up a SearXNG instance**:
    ```bash
    # Using Docker
    docker run -d -p 8888:8080 --name searxng searxng/searxng
@@ -39,13 +39,13 @@ This is a Model Context Protocol (MCP) server that acts as a bridge to a [SearxN
 ## Features
 
 *   Provides an MCP tool named `search`.
-*   Connects to a SearxNG instance specified by an environment variable.
-*   Returns search results from SearxNG in JSON format.
+*   Connects to a SearXNG instance specified by an environment variable.
+*   Returns search results from SearXNG in JSON format.
 
 ## Prerequisites
 
 *   Node.js and npm installed.
-*   A running SearxNG instance accessible from where this server will run.
+*   A running SearXNG instance accessible from where this server will run.
 
 ## Installation & Configuration
 
@@ -81,7 +81,7 @@ npx -y @smithery/cli install @nitish-raj/searxng-mcp-bridge --client claude
      }
    }
    ```
-   * **Crucially**, set the `SEARXNG_INSTANCE_URL` environment variable in the `env` section to the URL of the SearxNG instance the bridge should connect to (e.g., `http://localhost:8888` or a public instance like `https://searx.space/`). **This variable is mandatory.**
+   * **Crucially**, set the `SEARXNG_INSTANCE_URL` environment variable in the `env` section to the URL of the SearXNG instance the bridge should connect to (e.g., `http://localhost:8888` or a public instance like `https://searx.space/`). **This variable is mandatory.**
 
 ### Option 2: From Source
 
@@ -115,9 +115,9 @@ npx -y @smithery/cli install @nitish-raj/searxng-mcp-bridge --client claude
 
 3. **Restart MCP Client:** Restart the application using MCP (e.g., VS Code with the Roo extension) to load the new server configuration.
 
-## Setting up SearxNG
+## Setting up SearXNG
 
-You need a running SearxNG instance to use this bridge. Here are some options:
+You need a running SearXNG instance to use this bridge. Here are some options:
 
 1. **Using Docker (Recommended):**
    ```bash
@@ -140,7 +140,7 @@ You need a running SearxNG instance to use this bridge. Here are some options:
    docker-compose up -d
    ```
 
-3. **For more advanced configuration options**, refer to the [SearxNG documentation](https://github.com/searxng/searxng).
+3. **For more advanced configuration options**, refer to the [SearXNG documentation](https://github.com/searxng/searxng).
 
 ## Usage
 
