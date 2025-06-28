@@ -1,5 +1,10 @@
 name: Validate Package
 
+permissions:
+  contents: read
+  packages: write
+  actions: write
+
 on:
   workflow_dispatch:
     inputs:
