@@ -3,35 +3,54 @@
   "extends": [
     "config:recommended"
   ],
-  "labels": ["dependencies", "renovate"],
-  "schedule": ["before 5am on monday to friday"],
+  "labels": [
+    "dependencies",
+    "renovate"
+  ],
+  "schedule": [
+    "before 5am on monday to friday"
+  ],
   "dependencyDashboard": true,
   "packageRules": [
     {
-      "matchDepTypes": ["devDependencies"],
+      "matchDepTypes": [
+        "devDependencies"
+      ],
       "groupName": "devDependencies",
       "automerge": true,
       "automergeType": "pr",
-      "updateTypes": ["minor", "patch"]
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ]
     },
     {
-      "matchDepTypes": ["dependencies"],
+      "matchDepTypes": [
+        "dependencies"
+      ],
       "groupName": "dependencies",
       "automerge": false
     },
     {
-      "matchUpdateTypes": ["major"],
+      "matchUpdateTypes": [
+        "major"
+      ],
       "automerge": false
     },
     {
-      "matchUpdateTypes": ["minor", "patch"],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
       "automerge": true,
       "automergeType": "branch"
     },
     {
-      "matchPackagePatterns": ["^@?types/"],
       "groupName": "types packages",
-      "automerge": true
+      "automerge": true,
+      "matchPackageNames": [
+        "/^@?types//"
+      ]
     }
   ]
 }
