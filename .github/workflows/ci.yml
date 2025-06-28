@@ -8,6 +8,9 @@ on:
     branches: [ main ]
   workflow_dispatch:  # Allow manual triggering
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
