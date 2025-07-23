@@ -2,23 +2,14 @@ name: Validate Package
 
 permissions:
   contents: read
-  packages: write
-  actions: write
 
 on:
-  workflow_dispatch:
-    inputs:
-      dry_run:
-        description: 'Perform npm publish with --dry-run flag'
-        required: true
-        default: 'true'
-        type: choice
-        options:
-          - 'true'
-          - 'false'
+  pull_request:
+    branches: [ main ]
 
 jobs:
   validate:
+    if: ${{ github.actor == 'renovate[bot]' }}
     runs-on: ubuntu-latest
     
     steps:
@@ -29,7 +20,8 @@ jobs:
       with:
         node-version: '22.x'
         registry-url: 'https://registry.npmjs.org'
-    
+        cache: 'npm'
+
     - name: Install dependencies
       run: npm ci
     
@@ -43,7 +35,6 @@ jobs:
       run: tar -tvf *.tgz
     
     - name: Validate package with dry-run
-      if: ${{ github.event.inputs.dry_run == 'true' }}
       run: npm publish --dry-run
       
     - name: Upload package artifact
