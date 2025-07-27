@@ -190,47 +190,48 @@ This project uses GitHub Actions for continuous integration and deployment:
    - Value: [Your npm access token]
    - Click "Add secret"
 
-4. **Validate your package before publishing** (optional):
-   - After pushing your code to GitHub, go to the "Actions" tab
-   - Select the "Validate Package" workflow
-   - Click "Run workflow"
-   - This will build and pack your package without publishing it
-   - You can download the packed package as an artifact to inspect it
-
 ### Release Process
 
-1. **Continuous Integration**: Every push to main and pull request is automatically built and tested.
+This project uses GitHub Actions for automated and manual releases.
 
-2. **Release Management**: When a new version is ready to be released:
+#### Automated Releases (for Renovate)
 
-   ```bash
-   # For a patch release (0.1.0 -> 0.1.1)
-   npm run release:patch
-   
-   # For a minor release (0.1.0 -> 0.2.0)
-   npm run release:minor
-   
-   # For a major release (0.1.0 -> 1.0.0)
-   npm run release:major
-   ```
+When a pull request from Renovate is merged, the `release.yml` workflow is automatically triggered. This workflow handles the following:
 
-   This will:
-   - Update the version in `package.json`.
-   - **Automatically update `CHANGELOG.md`** based on commit messages since the last tag (using `conventional-changelog-cli`). Ensure `conventional-changelog-cli` is installed (`npm install --save-dev conventional-changelog-cli`) and use [Conventional Commits](https://www.conventionalcommits.org/) (e.g., `feat: ...`, `fix: ...`) for meaningful changelog entries.
-   - Create a git commit and tag locally.
-   
-3. **Publishing**:
-   ```bash
-   # Push the commit and tag
-   git push && git push --tags
-   ```
-   
-   The GitHub Actions workflow will automatically:
-   - Build the project
-   - Publish to npm
-   - Create a GitHub release
+-   **Bumps the `minor` version** of the package.
+-   **Updates the `CHANGELOG.md`** with the latest changes.
+-   **Publishes the new version** to the npm registry.
+-   **Creates a GitHub release** with the corresponding tag and changelog.
 
-The `CHANGELOG.md` file is automatically updated by the release script based on conventional commit messages.
+This process is fully automated and requires no manual intervention for dependency updates.
+
+#### Manual Releases
+
+To create a manual release, follow these steps:
+
+1.  **Update the version locally**:
+    Use the `npm version` command to bump the package version and create a corresponding git tag. This will also update the `CHANGELOG.md` file.
+
+    ```bash
+    # For a patch release (e.g., 0.1.0 -> 0.1.1)
+    npm version patch
+
+    # For a minor release (e.g., 0.1.0 -> 0.2.0)
+    npm version minor
+
+    # For a major release (e.g., 0.1.0 -> 1.0.0)
+    npm version major
+    ```
+
+2.  **Push the changes to GitHub**:
+    Push the commit and the newly created tag to the `main` branch.
+
+    ```bash
+    git push && git push --tags
+    ```
+
+3.  **Trigger the release workflow**:
+    Pushing the tag will trigger the `release.yml` workflow, which will build the package, publish it to npm, and create a GitHub release.
 
 
 ## Contributing
