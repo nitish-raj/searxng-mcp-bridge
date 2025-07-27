@@ -1,3 +1,20 @@
+## [0.6.1](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.6.0...v0.6.1) (2025-07-27)
+
+
+### Bug Fixes
+
+* :green_heart: validate on every push ([b906787](https://github.com/nitish-raj/searxng-mcp-bridge/commit/b906787b14581550831a3304fba162a23c332bd9))
+* simplify auto-release condition and allow manual triggering for package validation ([9bf30fe](https://github.com/nitish-raj/searxng-mcp-bridge/commit/9bf30fe39db3512bdae9c8fb66fb60999f1376ae))
+
+
+### Features
+
+* add version tag to GitHub release and update version script in package.json ([37af3d4](https://github.com/nitish-raj/searxng-mcp-bridge/commit/37af3d4764a7e3ba23a976ff23b6a9af106848a8))
+* enhance release workflow with version extraction and validation ([a213f6d](https://github.com/nitish-raj/searxng-mcp-bridge/commit/a213f6d1686f9753442c3c4765f90bdb3bd0df1f))
+* update CI/CD workflows for improved testing and release process ([8b243f1](https://github.com/nitish-raj/searxng-mcp-bridge/commit/8b243f15cdc2209d1f5e2b3c74ccaa7acb5baedb))
+
+
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
