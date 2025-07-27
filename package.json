@@ -19,7 +19,8 @@
     "inspector": "npx @modelcontextprotocol/inspector build/index.js",
     "release:major": "node scripts/release.js major",
     "release:minor": "node scripts/release.js minor",
-    "release:patch": "node scripts/release.js patch"
+    "release:patch": "node scripts/release.js patch",
+    "version": "conventional-changelog -p angular -i CHANGELOG.md -s && git add CHANGELOG.md"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.17.0",
