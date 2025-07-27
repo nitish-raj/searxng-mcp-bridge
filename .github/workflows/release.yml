@@ -4,13 +4,49 @@ on:
   push:
     tags:
       - 'v*'
-  workflow_dispatch:  # Allow manual triggering
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write  # Required for provenance attestation
 
 jobs:
-  build-and-publish:
+  test:
+    name: Test
     runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [20.x, 22.x]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run linting
+      run: npm run lint
+    
+    - name: Run tests
+      run: npm test
+    
+    - name: Build project
+      run: npm run build
+
+  build-and-publish:
+    name: Build and Publish
+    runs-on: ubuntu-latest
+    needs: test  # Ensure tests pass before releasing
     permissions:
-      contents: write  # This permission is needed to create releases
+      contents: write
+      id-token: write  # Required for provenance
     
     steps:
     - uses: actions/checkout@v4
@@ -28,33 +64,44 @@ jobs:
     - name: Build
       run: npm run build
     
-    - name: Extract version from tag
-      id: get_version
+    - name: Validate version consistency
+      id: validate_version
       run: |
-        VERSION=${GITHUB_REF#refs/tags/v}
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
-        echo "Version extracted from tag: $VERSION"
+        # Extract version from git tag
+        TAG_VERSION=${GITHUB_REF#refs/tags/v}
+        echo "TAG_VERSION=$TAG_VERSION" >> $GITHUB_ENV
         
-        # Verify that the tag version matches package.json version
+        # Extract version from package.json
         PKG_VERSION=$(node -p "require('./package.json').version")
-        if [ "$VERSION" != "$PKG_VERSION" ]; then
-          echo "::warning::Tag version ($VERSION) does not match package.json version ($PKG_VERSION)"
+        echo "PKG_VERSION=$PKG_VERSION" >> $GITHUB_ENV
+        
+        echo "Git tag version: $TAG_VERSION"
+        echo "package.json version: $PKG_VERSION"
+        
+        # Fail if versions don't match
+        if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+          echo "::error::Git tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)"
+          exit 1
         fi
+        
+        echo "✅ Version consistency check passed"
     
-    - name: Publish to npm
-      run: npm publish --access public
+    - name: Publish to npm with provenance
+      run: npm publish --provenance --access public
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
-        name: "v${{ env.VERSION }}"
+        name: "v${{ env.TAG_VERSION }}"
         body: |
-          ## @nitish-raj/searxng-mcp-bridge v${{ env.VERSION }}
+          ## @nitish-raj/searxng-mcp-bridge v${{ env.TAG_VERSION }}
           
           See [CHANGELOG.md](https://github.com/nitish-raj/searxng-mcp-bridge/blob/master/CHANGELOG.md) for details.
         draft: false
         prerelease: false
+        files: |
+          *.tgz
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
