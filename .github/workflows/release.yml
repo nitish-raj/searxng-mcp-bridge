@@ -4,7 +4,13 @@ on:
   push:
     tags:
       - 'v*'
+  release:
+    types: [published]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'The tag to release (e.g., v1.2.3)'
+        required: true
 
 permissions:
   contents: write
@@ -58,26 +64,37 @@ jobs:
     - name: Build
       run: npm run build
     
-    - name: Validate version consistency
-      id: validate_version
+    - name: Extract and Validate Version
+      id: extract_version
       run: |
-        # Extract version from git tag
-        TAG_VERSION=${GITHUB_REF#refs/tags/v}
-        echo "TAG_VERSION=$TAG_VERSION" >> $GITHUB_ENV
-        
+        if [[ "${{ github.event_name }}" == "release" ]]; then
+          VERSION_TAG="${{ github.event.release.tag_name }}"
+        elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          VERSION_TAG="${{ github.event.inputs.tag }}"
+        elif [[ "${{ github.event_name }}" == "push" ]]; then
+          VERSION_TAG="${{ github.ref_name }}"
+        else
+          echo "::error::Unsupported event type: ${{ github.event_name }}"
+          exit 1
+        fi
+
+        # Remove 'v' prefix if it exists
+        VERSION=${VERSION_TAG#v}
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+
         # Extract version from package.json
         PKG_VERSION=$(node -p "require('./package.json').version")
         echo "PKG_VERSION=$PKG_VERSION" >> $GITHUB_ENV
-        
-        echo "Git tag version: $TAG_VERSION"
+
+        echo "Extracted version: $VERSION"
         echo "package.json version: $PKG_VERSION"
-        
+
         # Fail if versions don't match
-        if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
-          echo "::error::Git tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)"
+        if [ "$VERSION" != "$PKG_VERSION" ]; then
+          echo "::error::Tag version ($VERSION) does not match package.json version ($PKG_VERSION)"
           exit 1
         fi
-        
+
         echo "✅ Version consistency check passed"
     
     - name: Publish to npm with provenance
@@ -88,9 +105,9 @@ jobs:
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
-        name: "v${{ env.TAG_VERSION }}"
+        name: "v${{ env.VERSION }}"
         body: |
-          ## @nitish-raj/searxng-mcp-bridge v${{ env.TAG_VERSION }}
+          ## @nitish-raj/searxng-mcp-bridge v${{ env.VERSION }}
           
           See [CHANGELOG.md](https://github.com/nitish-raj/searxng-mcp-bridge/blob/master/CHANGELOG.md) for details.
         draft: false
