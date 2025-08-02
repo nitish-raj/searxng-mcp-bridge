@@ -6,15 +6,17 @@ on:
       - 'v*'
   release:
     types: [published]
-  workflow_dispatch:
+  
+  workflow_call:
     inputs:
       tag:
         description: 'The tag to release (e.g., v1.2.3)'
         required: true
-
+        type: string
+        
 permissions:
   contents: write
-  id-token: write  # Required for provenance attestation
+  id-token: write
 
 jobs:
   test:
