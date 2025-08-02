@@ -1,3 +1,17 @@
+# [0.9.0](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.8.0...v0.9.0) (2025-08-02)
+
+
+### Bug Fixes
+
+* **workflow:** remove unnecessary secrets inheritance from release workflow call ([c6eee1a](https://github.com/nitish-raj/searxng-mcp-bridge/commit/c6eee1a35cd0e6ec7ded967aac557abb2ed24ac2))
+
+
+### Features
+
+* **release:** enhance auto-release workflow with version bumping and tagging ([4bd0e74](https://github.com/nitish-raj/searxng-mcp-bridge/commit/4bd0e745e54134e091b3cb9a5ee6aeac01d2868a))
+
+
+
 # [0.8.0](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.7.0...v0.8.0) (2025-08-02)
 
 
