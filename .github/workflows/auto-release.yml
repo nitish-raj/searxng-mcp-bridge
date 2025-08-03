@@ -46,6 +46,6 @@ jobs:
           git push origin --tags
 
       - name: Call Release Workflow
-        uses: ./.github/workflows/release.yml@master
+        uses: ./.github/workflows/release.yml
         with:
           tag: ${{ steps.bump_version.outputs.tag }}
