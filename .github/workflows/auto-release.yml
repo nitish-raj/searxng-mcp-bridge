@@ -6,13 +6,15 @@ on:
       - closed
 
 jobs:
-  release:
+  bump_version:
     if: |
-      github.event.pull_request.merged == true && 
+      github.event.pull_request.merged == true &&
       github.actor == 'renovate[bot]'
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    outputs:
+      tag: ${{ steps.bump_version.outputs.tag }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -45,7 +47,9 @@ jobs:
           git push origin master
           git push origin --tags
 
-      - name: Call Release Workflow
-        uses: ./.github/workflows/release.yml
-        with:
-          tag: ${{ steps.bump_version.outputs.tag }}
+  call_release:
+    needs: bump_version
+    uses: ./.github/workflows/release.yml
+    with:
+      tag: ${{ needs.bump_version.outputs.tag }}
+    secrets: inherit

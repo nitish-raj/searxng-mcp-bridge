@@ -71,6 +71,8 @@ jobs:
       run: |
         if [[ "${{ github.event_name }}" == "release" ]]; then
           VERSION_TAG="${{ github.event.release.tag_name }}"
+        elif [[ "${{ github.event_name }}" == "workflow_call" ]]; then
+          VERSION_TAG="${{ github.event.inputs.tag }}"
         elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
           VERSION_TAG="${{ github.event.inputs.tag }}"
         elif [[ "${{ github.event_name }}" == "push" ]]; then
