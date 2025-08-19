@@ -1,3 +1,14 @@
+## [0.9.3](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.9.2...v0.9.3) (2025-08-19)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @modelcontextprotocol/sdk to v1.17.3 ([#35](https://github.com/nitish-raj/searxng-mcp-bridge/issues/35)) ([7910e8b](https://github.com/nitish-raj/searxng-mcp-bridge/commit/7910e8bc177474d97a21dda29dcb4b0a0d722fdc))
+* **workflows:** add permissions for id-token in call_release job ([7a96fac](https://github.com/nitish-raj/searxng-mcp-bridge/commit/7a96fac93b9073f0c641b96a12453fe2caf3d82a))
+* **workflows:** refactor auto-release and release workflows for improved version handling ([0960703](https://github.com/nitish-raj/searxng-mcp-bridge/commit/096070341235554e1cb10a45b7cbbe05cc8b2b82))
+
+
+
 ## [0.9.2](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.9.1...v0.9.2) (2025-08-12)
 
 
