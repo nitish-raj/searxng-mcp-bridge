@@ -50,6 +50,9 @@ jobs:
   call_release:
     needs: bump_version
     uses: ./.github/workflows/release.yml
+    permissions:
+      contents: write
+      id-token: write
     with:
       tag: ${{ needs.bump_version.outputs.tag }}
     secrets: inherit
