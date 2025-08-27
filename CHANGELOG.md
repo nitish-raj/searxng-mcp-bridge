@@ -1,3 +1,18 @@
+## [0.9.4](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.9.3...v0.9.4) (2025-08-27)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @modelcontextprotocol/sdk to v1.17.4 ([#37](https://github.com/nitish-raj/searxng-mcp-bridge/issues/37)) ([15d7f8b](https://github.com/nitish-raj/searxng-mcp-bridge/commit/15d7f8b77c0d489f138e4292a8f4d61353cd118a))
+* **workflows:** improve version extraction logic for release events ([6a9345e](https://github.com/nitish-raj/searxng-mcp-bridge/commit/6a9345ec6b374b2ab3f88c4ddfb8db3e8fc44605))
+
+
+### Features
+
+* **funding:** add initial funding model platforms configuration ([c3dea14](https://github.com/nitish-raj/searxng-mcp-bridge/commit/c3dea1485ceb6dce7de8cfdb943622e6882b9b53))
+
+
+
 ## [0.9.3](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.9.2...v0.9.3) (2025-08-19)
 
 
