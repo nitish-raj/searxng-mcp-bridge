@@ -23,7 +23,7 @@
     "version": "conventional-changelog -p angular -i CHANGELOG.md -s && git add CHANGELOG.md"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "1.17.4",
+    "@modelcontextprotocol/sdk": "1.17.5",
     "axios": "^1.8.4"
   },
   "devDependencies": {
