@@ -13,9 +13,12 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
+    "dev": "tsx src/index.ts",
+    "build": "tsc -p tsconfig.json && node -e \"require('fs').chmodSync('build/index.js', 0o755)\"",
     "prepare": "npm run build",
-    "watch": "tsc --watch",
+    "watch": "tsc --watch -p tsconfig.json",
+    "start": "node build/index.js",
+    "start:http": "TRANSPORT=http node build/index.js",
     "inspector": "npx @modelcontextprotocol/inspector build/index.js",
     "release:major": "node scripts/release.js major",
     "release:minor": "node scripts/release.js minor",
@@ -23,13 +26,18 @@
     "version": "conventional-changelog -p angular -i CHANGELOG.md -s && git add CHANGELOG.md"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "1.17.4",
-    "axios": "^1.8.4"
+    "@modelcontextprotocol/sdk": "^1.17.4",
+    "axios": "^1.11.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/node": "^22.18.1",
     "conventional-changelog-cli": "^5.0.0",
-    "typescript": "^5.3.3"
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
   },
   "author": "nitish-raj",
   "license": "MIT",
@@ -47,5 +55,8 @@
   "bugs": {
     "url": "https://github.com/nitish-raj/searxng-mcp-bridge/issues"
   },
-  "homepage": "https://github.com/nitish-raj/searxng-mcp-bridge#readme"
+  "homepage": "https://github.com/nitish-raj/searxng-mcp-bridge#readme",
+  "engines": {
+    "node": ">=20.0.0"
+  }
 }

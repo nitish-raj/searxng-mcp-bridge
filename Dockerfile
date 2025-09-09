@@ -20,5 +20,8 @@ COPY . .
 # Set node environment
 ENV NODE_ENV=production
 
+# Expose port 3000 for HTTP transport
+EXPOSE 3000
+
 # Default command to start the MCP server
 CMD ["node", "build/index.js"]
