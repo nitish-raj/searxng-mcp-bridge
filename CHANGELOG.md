@@ -1,3 +1,12 @@
+## [0.9.5](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.9.4...v0.9.5) (2025-09-09)
+
+
+### Bug Fixes
+
+* **workflows:** ensure correct ref is used for checkout steps in release workflow ([d3d6ccc](https://github.com/nitish-raj/searxng-mcp-bridge/commit/d3d6ccc6b475fece0518aa3873f08605a0637162))
+
+
+
 ## [0.9.4](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.9.3...v0.9.4) (2025-08-27)
 
 
