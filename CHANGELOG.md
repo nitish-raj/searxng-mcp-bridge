@@ -1,3 +1,12 @@
+## [0.9.7](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.9.6...v0.9.7) (2025-09-15)
+
+
+### Bug Fixes
+
+* **deps:** update dependency axios to v1.12.0 [security] ([#43](https://github.com/nitish-raj/searxng-mcp-bridge/issues/43)) ([a8b87a5](https://github.com/nitish-raj/searxng-mcp-bridge/commit/a8b87a57bef06ccad4c9f022a7487deba769c3d7))
+
+
+
 ## [0.9.6](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.9.5...v0.9.6) (2025-09-09)
 
 
