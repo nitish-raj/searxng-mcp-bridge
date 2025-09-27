@@ -1,3 +1,12 @@
+## [0.9.12](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.9.11...v0.9.12) (2025-09-27)
+
+
+### Bug Fixes
+
+* handle unhandled promise rejections and improve MCP error logging ([8d771e7](https://github.com/nitish-raj/searxng-mcp-bridge/commit/8d771e7dafbcdaa352b600f4cd485debb2e2b7ab))
+
+
+
 ## [0.9.11](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.9.10...v0.9.11) (2025-09-27)
 
 
