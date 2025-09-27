@@ -71,6 +71,77 @@ class SearxngBridgeServer {
 	private readonly MAX_RETRIES = 3;
 	private readonly RETRY_DELAY = 1000; // 1 second
 
+	private async validateSearxngConnection(): Promise<void> {
+		try {
+			console.log(`[SearxNG Bridge] Validating connection to ${SEARXNG_URL}...`);
+			const response = await this.axiosInstance.get('/search', {
+				params: { q: 'connection_test', format: 'json' },
+				timeout: 10000 // 10s for validation
+			});
+			
+			if (response.status === 200 && response.data) {
+				console.log(`[SearxNG Bridge] ✅ Successfully connected to SearXNG instance`);
+			} else {
+				console.warn(`[SearxNG Bridge] ⚠️  SearXNG returned status: ${response.status}`);
+			}
+		} catch (error) {
+			console.error(`[SearxNG Bridge] ❌ Failed to connect to SearXNG instance at ${SEARXNG_URL}`);
+			if (axios.isAxiosError(error)) {
+				if (error.code === 'ECONNREFUSED') {
+					console.error(`[SearxNG Bridge] Connection refused - check if SearXNG is running at ${SEARXNG_URL}`);
+				} else if (error.code === 'ETIMEDOUT') {
+					console.error(`[SearxNG Bridge] Connection timeout - SearXNG may be slow or unreachable`);
+				} else if (error.response?.status === 404) {
+					console.error(`[SearxNG Bridge] Search endpoint not found - verify SearXNG configuration`);
+				} else {
+					console.error(`[SearxNG Bridge] HTTP Error: ${error.response?.status || error.message}`);
+				}
+			} else {
+				console.error(`[SearxNG Bridge] Network error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+			}
+			console.error(`[SearxNG Bridge] Server will continue running but searches may fail`);
+		}
+	}
+
+	private async performHealthCheck() {
+		const startTime = Date.now();
+		let searxngStatus = 'unknown';
+		let responseTime = 0;
+
+		try {
+			const response = await this.axiosInstance.get('/search', {
+				params: { q: 'health_check', format: 'json' },
+				timeout: 5000
+			});
+			responseTime = Date.now() - startTime;
+			searxngStatus = response.status === 200 ? 'healthy' : 'unhealthy';
+		} catch (error) {
+			responseTime = Date.now() - startTime;
+			searxngStatus = 'error';
+		}
+
+		const healthStatus = {
+			status: searxngStatus === 'healthy' ? 'healthy' : 'degraded',
+			searxng_instance: SEARXNG_URL,
+			searxng_status: searxngStatus,
+			response_time_ms: responseTime,
+			cache_size: this.cache.size,
+			debug_mode: DEBUG_MODE,
+			version: PACKAGE_VERSION,
+			timestamp: new Date().toISOString()
+		};
+
+		return {
+			content: [
+				{
+					type: 'text',
+					text: JSON.stringify(healthStatus, null, 2),
+				},
+			],
+			isError: searxngStatus !== 'healthy',
+		};
+	}
+
 	constructor() {
 		// Handle unhandled promise rejections to prevent unexpected connection closures
 		process.on('unhandledRejection', (reason, promise) => {
@@ -92,12 +163,15 @@ class SearxngBridgeServer {
 
 		this.axiosInstance = axios.create({
 			baseURL: SEARXNG_URL,
-			timeout: 15000, // 15s timeout
+			timeout: 30000, // 30s timeout for slower instances
 			headers: {
 				// Add a common browser User-Agent to potentially avoid bot detection
 				'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
 			}
 		});
+
+		// Validate SearXNG connection on startup
+		this.validateSearxngConnection();
 
 		this.setupToolHandlers();
 
@@ -176,10 +250,23 @@ class SearxngBridgeServer {
 						required: ['query'],
 					},
 				},
+				{
+					name: 'health_check',
+					description: 'Check the health and connectivity status of the SearxNG bridge',
+					inputSchema: {
+						type: 'object',
+						properties: {},
+						required: [],
+					},
+				},
 			],
 		}));
 
 		this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
+			if (request.params.name === 'health_check') {
+				return this.performHealthCheck();
+			}
+
 			if (request.params.name !== 'search') {
 				throw new McpError(
 					ErrorCode.MethodNotFound,
@@ -295,11 +382,20 @@ class SearxngBridgeServer {
 		let errorMessage = `Failed to fetch search results from SearxNG instance at ${SEARXNG_URL} after ${this.MAX_RETRIES} attempts.`;
 		
 		if (axios.isAxiosError(lastError)) {
-			errorMessage = `SearxNG request error (${SEARXNG_URL}): ${
-				lastError.response?.data?.message || lastError.message
-			}`;
-			if (lastError.response?.status) {
-				errorMessage += ` (Status: ${lastError.response.status})`;
+			if (lastError.code === 'ECONNREFUSED') {
+				errorMessage = `Connection refused to SearXNG at ${SEARXNG_URL} - check if the instance is running and accessible`;
+			} else if (lastError.code === 'ETIMEDOUT') {
+				errorMessage = `Connection timeout to SearXNG at ${SEARXNG_URL} - the instance may be slow or unreachable`;
+			} else if (lastError.code === 'ENOTFOUND') {
+				errorMessage = `SearXNG instance not found at ${SEARXNG_URL} - check the URL configuration`;
+			} else if (lastError.response?.status === 404) {
+				errorMessage = `SearXNG search endpoint not found at ${SEARXNG_URL}/search - verify instance configuration`;
+			} else if (lastError.response?.status === 503) {
+				errorMessage = `SearXNG service unavailable (503) - the instance may be overloaded or down`;
+			} else if (lastError.response?.status) {
+				errorMessage = `SearXNG request error (${SEARXNG_URL}): HTTP ${lastError.response.status} - ${lastError.response.statusText}`;
+			} else {
+				errorMessage = `SearXNG request error (${SEARXNG_URL}): ${lastError.message}`;
 			}
 		} else if (lastError instanceof Error) {
 			errorMessage = `Unexpected error while contacting ${SEARXNG_URL}: ${lastError.message}`;
