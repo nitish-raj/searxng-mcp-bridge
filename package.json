@@ -1,6 +1,6 @@
 {
   "name": "@nitish-raj/searxng-mcp-bridge",
-  "version": "0.9.11",
+  "version": "0.9.15",
   "description": "MCP Server for SearxNG Bridge",
   "private": false,
   "type": "module",
@@ -26,7 +26,7 @@
     "version": "conventional-changelog -p angular -i CHANGELOG.md -s && git add CHANGELOG.md"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "1.18.2",
+    "@modelcontextprotocol/sdk": "1.18.1",
     "axios": "^1.8.4"
   },
   "devDependencies": {

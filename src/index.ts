@@ -88,21 +88,124 @@ class SearxngBridgeServer {
   private readonly MAX_RETRIES = 3;
   private readonly RETRY_DELAY = 1000;
 
-  constructor() {
-    this.server = new Server(
-      { name: 'searxng-bridge', version: PACKAGE_VERSION, description: 'MCP Server for SearxNG Bridge' },
-      { capabilities: { resources: {}, tools: {} } }
-    );
+	private async validateSearxngConnection(): Promise<void> {
+		try {
+			console.log(`[SearxNG Bridge] Validating connection to ${SEARXNG_URL}...`);
+			const response = await this.axiosInstance.get('/search', {
+				params: { q: 'connection_test', format: 'json' },
+				timeout: 10000 // 10s for validation
+			});
+			
+			if (response.status === 200 && response.data) {
+				console.log(`[SearxNG Bridge] ✅ Successfully connected to SearXNG instance`);
+			} else {
+				console.warn(`[SearxNG Bridge] ⚠️  SearXNG returned status: ${response.status}`);
+			}
+		} catch (error) {
+			console.error(`[SearxNG Bridge] ❌ Failed to connect to SearXNG instance at ${SEARXNG_URL}`);
+			if (axios.isAxiosError(error)) {
+				if (error.code === 'ECONNREFUSED') {
+					console.error(`[SearxNG Bridge] Connection refused - check if SearXNG is running at ${SEARXNG_URL}`);
+				} else if (error.code === 'ETIMEDOUT') {
+					console.error(`[SearxNG Bridge] Connection timeout - SearXNG may be slow or unreachable`);
+				} else if (error.response?.status === 404) {
+					console.error(`[SearxNG Bridge] Search endpoint not found - verify SearXNG configuration`);
+				} else {
+					console.error(`[SearxNG Bridge] HTTP Error: ${error.response?.status || error.message}`);
+				}
+			} else {
+				console.error(`[SearxNG Bridge] Network error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+			}
+			console.error(`[SearxNG Bridge] Server will continue running but searches may fail`);
+		}
+	}
 
-    this.axiosInstance = axios.create({
-      baseURL: SEARXNG_URL,
-      timeout: 15000,
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36' }
-    });
+	private async performHealthCheck() {
+		const startTime = Date.now();
+		let searxngStatus = 'unknown';
+		let responseTime = 0;
 
-    this.setupToolHandlers();
+		try {
+			const response = await this.axiosInstance.get('/search', {
+				params: { q: 'health_check', format: 'json' },
+				timeout: 5000
+			});
+			responseTime = Date.now() - startTime;
+			searxngStatus = response.status === 200 ? 'healthy' : 'unhealthy';
+		} catch (error) {
+			responseTime = Date.now() - startTime;
+			searxngStatus = 'error';
+		}
 
-    this.server.onerror = (error) => console.error('[MCP Error]', error);
+		const healthStatus = {
+			status: searxngStatus === 'healthy' ? 'healthy' : 'degraded',
+			searxng_instance: SEARXNG_URL,
+			searxng_status: searxngStatus,
+			response_time_ms: responseTime,
+			cache_size: this.cache.size,
+			debug_mode: DEBUG_MODE,
+			version: PACKAGE_VERSION,
+			timestamp: new Date().toISOString()
+		};
+
+		return {
+			content: [
+				{
+					type: 'text',
+					text: JSON.stringify(healthStatus, null, 2),
+				},
+			],
+			isError: searxngStatus !== 'healthy',
+		};
+	}
+
+	constructor() {
+		// Handle unhandled promise rejections to prevent unexpected connection closures
+		process.on('unhandledRejection', (reason, promise) => {
+			console.error('[Unhandled Rejection] at:', promise, 'reason:', reason);
+		});
+		this.server = new Server(
+			{
+				name: 'searxng-bridge',
+				version: PACKAGE_VERSION,
+				description: 'MCP Server for SearxNG Bridge',
+			},
+			{
+				capabilities: {
+					resources: {},
+					tools: {},
+				},
+			}
+		);
+
+		this.axiosInstance = axios.create({
+			baseURL: SEARXNG_URL,
+			timeout: 30000, // 30s timeout for slower instances
+			headers: {
+				// Add a common browser User-Agent to potentially avoid bot detection
+				'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
+			}
+		});
+
+		// Validate SearXNG connection on startup
+		this.validateSearxngConnection();
+
+		this.setupToolHandlers();
+
+		this.server.onerror = (error) => {
+    if (error instanceof McpError && error.code === ErrorCode.ConnectionClosed) {
+        console.error('[MCP Connection] Client connection closed unexpectedly');
+    } else {
+        console.error('[MCP Error]', error);
+    }
+};
+		process.on('SIGINT', async () => {
+			await this.server.close();
+			process.exit(0);
+		});
+		
+		setInterval(() => this.cleanCache(), 60 * 1000); // Clean cache every minute
+	}
 
     setInterval(() => this.cleanCache(), 60 * 1000);
   }
@@ -114,32 +217,73 @@ class SearxngBridgeServer {
     }
   }
 
-  private getCacheKey(params: any): string {
-    return JSON.stringify(params);
-  }
+	private setupToolHandlers() {
+		this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
+			tools: [
+				{
+					name: 'search',
+					description: 'Perform a search using the configured SearxNG instance',
+					inputSchema: {
+						type: 'object',
+						properties: {
+							query: {
+								type: 'string',
+								description: 'The search query string',
+							},
+							language: {
+								type: 'string',
+								description: 'Language code for search results (e.g., "en-US", "fr", "de")',
+							},
+							categories: {
+								type: 'array',
+								items: {
+									type: 'string',
+								},
+								description: 'Categories to search in (e.g., ["general", "images", "news"])',
+							},
+							time_range: {
+								type: 'string',
+								description: 'Time range for results (e.g., "day", "week", "month", "year")',
+							},
+							safesearch: {
+								type: 'number',
+								description: 'Safe search level (0: off, 1: moderate, 2: strict)',
+							},
+							format: {
+								type: 'string',
+								description: 'Result format (default: "json", options: "json", "html")',
+							},
+							max_results: {
+								type: 'number',
+								description: 'Maximum number of results to return',
+							},
+						},
+						required: ['query'],
+					},
+				},
+				{
+					name: 'health_check',
+					description: 'Check the health and connectivity status of the SearxNG bridge',
+					inputSchema: {
+						type: 'object',
+						properties: {},
+						required: [],
+					},
+				},
+			],
+		}));
 
-  private setupToolHandlers() {
-    this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
-      tools: [
-        {
-          name: 'search',
-          description: 'Perform a search using the configured SearxNG instance',
-          inputSchema: {
-            type: 'object',
-            properties: {
-              query: { type: 'string', description: 'The search query string' },
-              language: { type: 'string', description: 'Language code (e.g., "en-US", "fr", "de")' },
-              categories: { type: 'array', items: { type: 'string' }, description: 'e.g., ["general","images","news"]' },
-              time_range: { type: 'string', description: 'e.g., "day","week","month","year"' },
-              safesearch: { type: 'number', description: '0 off, 1 moderate, 2 strict' },
-              format: { type: 'string', description: 'default "json"; options "json","html"' },
-              max_results: { type: 'number', description: 'Maximum number of results to return' }
-            },
-            required: ['query']
-          }
-        }
-      ]
-    }));
+		this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
+			if (request.params.name === 'health_check') {
+				return this.performHealthCheck();
+			}
+
+			if (request.params.name !== 'search') {
+				throw new McpError(
+					ErrorCode.MethodNotFound,
+					`Unknown tool: ${request.params.name}`
+				);
+			}
 
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
       if (request.params.name !== 'search') {
@@ -157,8 +301,45 @@ class SearxngBridgeServer {
       if (args.time_range) searchParams.time_range = args.time_range;
       if (args.safesearch !== undefined) searchParams.safesearch = args.safesearch;
 
-      const cacheKey = this.getCacheKey(searchParams);
-      const cachedResult = this.cache.get(cacheKey);
+				return {
+					content: [
+						{
+							type: 'text',
+							text: JSON.stringify(results, null, 2),
+						},
+					],
+				};
+			} catch (error) {
+				lastError = error;
+				
+				if (attempt < this.MAX_RETRIES) {
+					await new Promise(resolve => setTimeout(resolve, this.RETRY_DELAY * attempt));
+				}
+			}
+		}
+		
+		// All retries failed
+		let errorMessage = `Failed to fetch search results from SearxNG instance at ${SEARXNG_URL} after ${this.MAX_RETRIES} attempts.`;
+		
+		if (axios.isAxiosError(lastError)) {
+			if (lastError.code === 'ECONNREFUSED') {
+				errorMessage = `Connection refused to SearXNG at ${SEARXNG_URL} - check if the instance is running and accessible`;
+			} else if (lastError.code === 'ETIMEDOUT') {
+				errorMessage = `Connection timeout to SearXNG at ${SEARXNG_URL} - the instance may be slow or unreachable`;
+			} else if (lastError.code === 'ENOTFOUND') {
+				errorMessage = `SearXNG instance not found at ${SEARXNG_URL} - check the URL configuration`;
+			} else if (lastError.response?.status === 404) {
+				errorMessage = `SearXNG search endpoint not found at ${SEARXNG_URL}/search - verify instance configuration`;
+			} else if (lastError.response?.status === 503) {
+				errorMessage = `SearXNG service unavailable (503) - the instance may be overloaded or down`;
+			} else if (lastError.response?.status) {
+				errorMessage = `SearXNG request error (${SEARXNG_URL}): HTTP ${lastError.response.status} - ${lastError.response.statusText}`;
+			} else {
+				errorMessage = `SearXNG request error (${SEARXNG_URL}): ${lastError.message}`;
+			}
+		} else if (lastError instanceof Error) {
+			errorMessage = `Unexpected error while contacting ${SEARXNG_URL}: ${lastError.message}`;
+		}
 
       if (cachedResult && Date.now() - cachedResult.timestamp < this.CACHE_TTL) {
         let results = cachedResult.data;
