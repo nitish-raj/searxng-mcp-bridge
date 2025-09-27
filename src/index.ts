@@ -72,6 +72,10 @@ class SearxngBridgeServer {
 	private readonly RETRY_DELAY = 1000; // 1 second
 
 	constructor() {
+		// Handle unhandled promise rejections to prevent unexpected connection closures
+		process.on('unhandledRejection', (reason, promise) => {
+			console.error('[Unhandled Rejection] at:', promise, 'reason:', reason);
+		});
 		this.server = new Server(
 			{
 				name: 'searxng-bridge',
@@ -97,7 +101,13 @@ class SearxngBridgeServer {
 
 		this.setupToolHandlers();
 
-		this.server.onerror = (error) => console.error('[MCP Error]', error);
+		this.server.onerror = (error) => {
+    if (error instanceof McpError && error.code === ErrorCode.ConnectionClosed) {
+        console.error('[MCP Connection] Client connection closed unexpectedly');
+    } else {
+        console.error('[MCP Error]', error);
+    }
+};
 		process.on('SIGINT', async () => {
 			await this.server.close();
 			process.exit(0);
