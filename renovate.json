@@ -17,7 +17,7 @@
         "devDependencies"
       ],
       "groupName": "devDependencies",
-      "automerge": true,
+      "automerge": false,
       "automergeType": "pr",
       "matchUpdateTypes": [
         "minor",
@@ -47,7 +47,7 @@
     },
     {
       "groupName": "types packages",
-      "automerge": true,
+      "automerge": false,
       "matchPackageNames": [
         "/^@?types//"
       ]
