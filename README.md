@@ -23,8 +23,8 @@ This is a Model Context Protocol (MCP) server that acts as a bridge to a [SearXN
 
    Optional: Run as an HTTP server (new, opt-in)
    ```bash
-   # Using env variables (recommended)
-   TRANSPORT=http PORT=3000 HOST=127.0.0.1 SEARXNG_INSTANCE_URL=http://localhost:8888 npx -y @nitish-raj/searxng-mcp-bridge
+    # Using env variables (recommended)
+     TRANSPORT=http PORT=3002 HOST=127.0.0.1 SEARXNG_INSTANCE_URL=http://localhost:8080 npx -y @nitish-raj/searxng-mcp-bridge
 
    # Or use the CLI flag form
    npx -y @nitish-raj/searxng-mcp-bridge --transport=http
@@ -66,21 +66,23 @@ This is a Model Context Protocol (MCP) server that acts as a bridge to a [SearXN
 
 ## Configuration
 
-- `SEARXNG_INSTANCE_URL` — REQUIRED. The full URL of the SearXNG instance (e.g., `http://localhost:8888`).
+- `SEARXNG_INSTANCE_URL` — REQUIRED. The full URL of the SearXNG instance (e.g., `http://localhost:8080`).
  - `TRANSPORT` — Transport protocol: `stdio` (default) or `http`
- - `PORT` — HTTP server port. Default: `3000` (Smithery uses `8081`)
+ - `PORT` — HTTP server port. Default: `3000` (use `3002` for development, Smithery uses `8081`)
  - `HOST` — Server bind address. Default: `127.0.0.1` (use `0.0.0.0` for containers)
- - `CORS_ORIGIN` — Allowed origins for CORS. Default: `*` (restrict in production)
+ - `CORS_ORIGIN` — Comma-separated list of allowed origins for CORS. Default: localhost:3002 (development) or `*` (production for Smithery)
  - `MCP_HTTP_BEARER` — Optional bearer token for HTTP authentication
  **HTTP Transport Features**:
 - Session management with `mcp-session-id` headers
-- CORS support for cross-origin requests  
+- Secure CORS with origin whitelist validation
 - Rate limiting (100 requests/minute per IP)
 - Optional bearer authentication via `MCP_HTTP_BEARER`
 - DNS rebinding protection
 
-**Notes**:
-- HTTP transport is opt-in - stdio remains the default
+**Security Notes**:
+- CORS uses secure whitelist in development (localhost:3002 only)
+- Production uses wildcard `*` for Smithery compatibility (as per Smithery docs)
+- Set `CORS_ORIGIN` to customize allowed origins for your use case
 - Set `TRANSPORT=stdio` to revert to stdio mode
 
 ## HTTP Transport
@@ -98,7 +100,7 @@ The HTTP transport implements the MCP Streamable HTTP specification (2025-03-26)
 
 **Test HTTP endpoint**:
 ```bash
-curl -X POST http://localhost:3000/mcp \
+curl -X POST http://localhost:3002/mcp \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
 ```
@@ -117,7 +119,7 @@ Smithery automatically handles:
 - Container deployment with HTTP transport
 - Port configuration (uses 8081 by default)
 - Environment variable management
-- CORS configuration for web clients
+- Secure CORS configuration for web clients
 
 ## Docker
 
@@ -127,10 +129,10 @@ The Dockerfile exposes port `8081` for Smithery compatibility (HTTP transport). 
 docker build -t searxng-mcp-bridge .
 
 # Run mapping port 8081 (Smithery default)
-docker run -d -p 8081:8081 --env SEARXNG_INSTANCE_URL=http://localhost:8888 --name searxng-mcp-bridge searxng-mcp-bridge
+ docker run -d -p 8081:8081 --env SEARXNG_INSTANCE_URL=http://localhost:8080 --name searxng-mcp-bridge searxng-mcp-bridge
 
 # To run HTTP transport inside container:
-docker run -d -p 8081:8081 -e TRANSPORT=http -e PORT=8081 -e SEARXNG_INSTANCE_URL=http://localhost:8888 searxng-mcp-bridge
+ docker run -d -p 8081:8081 -e TRANSPORT=http -e PORT=8081 -e SEARXNG_INSTANCE_URL=http://localhost:8080 searxng-mcp-bridge
 ```
 
 Note: when containerized set `HOST=0.0.0.0` or rely on the default exposed port mapping. Port 8081 is used for Smithery deployment compatibility.
@@ -139,7 +141,7 @@ Note: when containerized set `HOST=0.0.0.0` or rely on the default exposed port 
 
 **STDIO Clients**: Use the tool unchanged - no configuration changes required.
 
-**HTTP Clients**: Connect to `http://localhost:3000/mcp` (or your configured port) and send MCP JSON-RPC requests.
+**HTTP Clients**: Connect to `http://localhost:3002/mcp` (development port) and send MCP JSON-RPC requests.
 
 **Smithery**: Smithery handles all configuration automatically.
 

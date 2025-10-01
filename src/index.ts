@@ -413,22 +413,44 @@ class SearxngBridgeServer {
       // Apply the bearer auth middleware
       app.use(bearerAuthMiddleware);
       
-       // Enhanced CORS configuration for Smithery compatibility
-       const corsOrigin = process.env.CORS_ORIGIN 
-         ? (process.env.CORS_ORIGIN.includes(',') 
-             ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim()) 
-             : process.env.CORS_ORIGIN)
-         : '*';
-         
-       app.use(
-         cors({
-           origin: corsOrigin,
-           credentials: true,
-           exposedHeaders: ['mcp-session-id', 'mcp-protocol-version'],
-           allowedHeaders: ['Content-Type', 'Authorization', 'mcp-session-id', '*'],
-           methods: ['GET', 'POST', 'DELETE', 'OPTIONS']
-         })
-       );
+        // Secure CORS configuration with whitelist approach
+        const corsOrigin = process.env.CORS_ORIGIN 
+          ? (process.env.CORS_ORIGIN.includes(',') 
+              ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim()) 
+              : process.env.CORS_ORIGIN)
+          : process.env.NODE_ENV === 'production' 
+            ? '*' // Smithery requires wildcard for their deployment
+            : ['http://localhost:3002', 'http://127.0.0.1:3002']; // Development whitelist - only port 3002
+        
+        // CORS validation function
+        const validateOrigin = (origin: string | undefined, allowedOrigins: string | string[]): boolean => {
+          if (!origin) return true; // Allow requests with no origin (curl, mobile apps)
+          if (allowedOrigins === '*') return true; // Wildcard allows all origins
+          if (Array.isArray(allowedOrigins)) {
+            return allowedOrigins.some(allowed => allowed === origin);
+          }
+          return allowedOrigins === origin;
+        };
+        
+        app.use(cors({
+         origin: (origin, callback) => {
+           // Allow requests with no Origin header (like mobile apps, curl)
+           if (!origin) {
+             return callback(null, true);
+           }
+           
+           if (validateOrigin(origin, corsOrigin)) {
+             callback(null, true);
+           } else {
+             redactLog(`[SearxNG Bridge] CORS blocked origin: ${origin}`);
+             callback(new Error('Not allowed by CORS'));
+           }
+         },
+         credentials: true,
+         exposedHeaders: ['mcp-session-id', 'mcp-protocol-version'],
+         allowedHeaders: ['Content-Type', 'Authorization', 'mcp-session-id'],
+         methods: ['GET', 'POST', 'DELETE', 'OPTIONS']
+       }));
 
       const transports: { [sessionId: string]: StreamableHTTPServerTransport } = {};
 
@@ -485,14 +507,22 @@ class SearxngBridgeServer {
         await transport.handleRequest(req, res);
       };
 
-      // OPTIONS endpoint for CORS preflight requests
+      // OPTIONS endpoint for CORS preflight requests with security
       app.options('/mcp', (req: express.Request, res: express.Response) => {
-        res.header('Access-Control-Allow-Origin', '*');
-        res.header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
-        res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, mcp-session-id, *');
-        res.header('Access-Control-Allow-Credentials', 'true');
-        res.header('Access-Control-Expose-Headers', 'mcp-session-id, mcp-protocol-version');
-        res.status(200).send();
+        const origin = req.headers.origin;
+        
+        // Validate origin for preflight requests
+        if (!origin || validateOrigin(origin, corsOrigin)) {
+          res.header('Access-Control-Allow-Origin', origin || '*');
+          res.header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+          res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, mcp-session-id');
+          res.header('Access-Control-Allow-Credentials', 'true');
+          res.header('Access-Control-Expose-Headers', 'mcp-session-id, mcp-protocol-version');
+          res.status(200).send();
+        } else {
+          redactLog(`[SearxNG Bridge] CORS preflight blocked origin: ${origin}`);
+          res.status(403).json({ error: 'Origin not allowed' });
+        }
       });
 
       app.get('/mcp', handleSessionRequest);
