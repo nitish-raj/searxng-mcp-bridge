@@ -372,7 +372,7 @@ class SearxngBridgeServer {
 
        if (transport === 'http') {
        const app = express();
-       const PORT = parseInt(process.env.PORT || '3000', 10);
+       const PORT = parseInt(process.env.PORT || '3002', 10);
        const HOST = process.env.HOST || '127.0.0.1';
        app.use(express.json());
       
@@ -480,7 +480,7 @@ class SearxngBridgeServer {
               onsessioninitialized: (sid) => {
                 transports[sid] = transport;
               },
-              enableDnsRebindingProtection: false, // Disable for testing
+              enableDnsRebindingProtection: true, // Enable for security
               allowedHosts: [`${HOST}:${PORT}`, `localhost:${PORT}`, '127.0.0.1:' + PORT]
             });
           transport.onclose = () => {
@@ -513,7 +513,14 @@ class SearxngBridgeServer {
         
         // Validate origin for preflight requests
         if (!origin || validateOrigin(origin, corsOrigin)) {
-          res.header('Access-Control-Allow-Origin', origin || '*');
+          // Set origin based on corsOrigin configuration
+          if (corsOrigin === '*') {
+            res.header('Access-Control-Allow-Origin', '*');
+          } else if (!origin) {
+            res.header('Access-Control-Allow-Origin', corsOrigin === '*' ? '*' : corsOrigin);
+          } else {
+            res.header('Access-Control-Allow-Origin', origin);
+          }
           res.header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
           res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, mcp-session-id');
           res.header('Access-Control-Allow-Credentials', 'true');
