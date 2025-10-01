@@ -18,16 +18,16 @@ This is a Model Context Protocol (MCP) server that acts as a bridge to a [SearXN
    Default (STDIO, unchanged):
    ```bash
    # Run directly with npx (default - stdio transport)
-   npx @nitish-raj/searxng-mcp-bridge
+   npx -y @nitish-raj/searxng-mcp-bridge
    ```
 
    Optional: Run as an HTTP server (new, opt-in)
    ```bash
    # Using env variables (recommended)
-   TRANSPORT=http PORT=3000 HOST=127.0.0.1 SEARXNG_INSTANCE_URL=http://localhost:8888 npx @nitish-raj/searxng-mcp-bridge
+   TRANSPORT=http PORT=3000 HOST=127.0.0.1 SEARXNG_INSTANCE_URL=http://localhost:8888 npx -y @nitish-raj/searxng-mcp-bridge
 
    # Or use the CLI flag form
-   npx @nitish-raj/searxng-mcp-bridge --transport=http
+   npx -y @nitish-raj/searxng-mcp-bridge --transport=http
 
    # Or run the built bundle
    TRANSPORT=http node build/index.js
@@ -40,7 +40,10 @@ This is a Model Context Protocol (MCP) server that acts as a bridge to a [SearXN
      "mcpServers": {
        "searxng-bridge": {
          "command": "npx",
-         "args": ["@nitish-raj/searxng-mcp-bridge"],
+         "args": [
+          "-y",
+          "@nitish-raj/searxng-mcp-bridge"
+          ],
          "env": {
            "SEARXNG_INSTANCE_URL": "YOUR_SEARXNG_INSTANCE_URL"
          },
@@ -50,71 +53,95 @@ This is a Model Context Protocol (MCP) server that acts as a bridge to a [SearXN
    }
    ```
 
-   If you use Smithery to install/run the bridge, the package now supports selecting the transport via the Smithery config:
-   - In Smithery config (example), set `transport: "http"` to run the bridge over HTTP instead of stdio. Smithery will set `TRANSPORT` in the process environment when launching the bridge.
+**Smithery Configuration**: When using Smithery, you can set `transport: "http"` in the Smithery config to run the bridge over HTTP instead of stdio. Smithery will set `TRANSPORT` in the process environment when launching the bridge.
 
 ## Features
 
-* Provides an MCP tool named `search`.
-* Connects to a SearXNG instance specified by an environment variable.
-* Returns search results from SearXNG in JSON format.
+* **Search Tool**: Perform web searches using SearXNG with configurable parameters
+* **Health Check**: Monitor SearXNG instance connectivity and performance
+* **Dual Transport**: Supports both STDIO (default) and HTTP transports
+* **Session Management**: HTTP transport includes session-based connections
+* **CORS Support**: Proper cross-origin headers for web client integration
+* **Rate Limiting**: Built-in protection against excessive requests (HTTP mode)
 
-## Environment variables & configuration (new HTTP options)
+## Configuration
 
 - `SEARXNG_INSTANCE_URL` — REQUIRED. The full URL of the SearXNG instance (e.g., `http://localhost:8888`).
-- `TRANSPORT` — Optional. Select transport: `stdio` (default) or `http`.
-- `PORT` — Optional. When running HTTP transport, the server listens on this port. Default: `3000`.
-- `HOST` — Optional. Default: `127.0.0.1`. When containerized, set to `0.0.0.0`.
-- `CORS_ORIGIN` — Optional. Default `*`. Restrict in production to allowed client origins.
-- CORS headers used by the HTTP transport:
-  - Exposed headers: `Mcp-Session-Id`
-  - Allowed headers: `Content-Type`, `mcp-session-id`
+ - `TRANSPORT` — Transport protocol: `stdio` (default) or `http`
+ - `PORT` — HTTP server port. Default: `3000` (Smithery uses `8081`)
+ - `HOST` — Server bind address. Default: `127.0.0.1` (use `0.0.0.0` for containers)
+ - `CORS_ORIGIN` — Allowed origins for CORS. Default: `*` (restrict in production)
+ - `MCP_HTTP_BEARER` — Optional bearer token for HTTP authentication
+ **HTTP Transport Features**:
+- Session management with `mcp-session-id` headers
+- CORS support for cross-origin requests  
+- Rate limiting (100 requests/minute per IP)
+- Optional bearer authentication via `MCP_HTTP_BEARER`
+- DNS rebinding protection
 
-Notes:
-- The HTTP transport is opt-in. Default behaviour (stdio) is preserved so existing MCP clients that spawn the tool via stdio continue to work unchanged.
-- To revert to stdio, set `TRANSPORT=stdio` or run without the `--transport` flag.
+**Notes**:
+- HTTP transport is opt-in - stdio remains the default
+- Set `TRANSPORT=stdio` to revert to stdio mode
 
-## Running over HTTP — details & smoke test
+## HTTP Transport
 
-The HTTP transport exposes a single endpoint for MCP traffic:
+The HTTP transport implements the MCP Streamable HTTP specification (2025-03-26) with the following endpoints:
 
-- POST /mcp — accepts MCP requests and responds with MCP responses. The transport uses `Mcp-Session-Id` headers to manage session-based transports.
+**MCP Endpoints**:
+- `POST /mcp` - Send MCP requests
+- `GET /mcp` - Server-Sent Events for notifications  
+- `DELETE /mcp` - Terminate sessions
+- `OPTIONS /mcp` - CORS preflight requests
 
-Smoke-test (single-line curl to list tools):
+**System Endpoints**:
+- `GET /healthz` - Health check and status
+
+**Test HTTP endpoint**:
 ```bash
-curl -X POST http://localhost:3000/mcp -H "Content-Type: application/json" -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
+curl -X POST http://localhost:3000/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}'
 ```
 
-If the server is running in HTTP mode you should receive a JSON-RPC response with the list of registered tools (including `search`).
+This returns a JSON-RPC response with the list of available tools (`search` and `health_check`).
 
 ## Using Smithery
 
-If you install via Smithery, you can configure the `transport` value in the Smithery configuration for this package. When Smithery starts the server, it will set `TRANSPORT` in the process environment accordingly (so you can choose `http` or `stdio` from Smithery without code changes).
+Smithery provides container deployment with automatic HTTP transport configuration. Install via Smithery:
 
-Install via Smithery:
 ```bash
 npx -y @smithery/cli install @nitish-raj/searxng-mcp-bridge --client claude
 ```
 
+Smithery automatically handles:
+- Container deployment with HTTP transport
+- Port configuration (uses 8081 by default)
+- Environment variable management
+- CORS configuration for web clients
+
 ## Docker
 
-The Dockerfile now exposes port `3000` (the HTTP default). To run the container and allow HTTP access:
+The Dockerfile exposes port `8081` for Smithery compatibility (HTTP transport). To run the container and allow HTTP access:
 ```bash
 # Build (example)
 docker build -t searxng-mcp-bridge .
 
-# Run mapping port 3000
-docker run -d -p 3000:3000 --env SEARXNG_INSTANCE_URL=http://host.docker.internal:8888 --name searxng-mcp-bridge searxng-mcp-bridge
+# Run mapping port 8081 (Smithery default)
+docker run -d -p 8081:8081 --env SEARXNG_INSTANCE_URL=http://localhost:8888 --name searxng-mcp-bridge searxng-mcp-bridge
 
 # To run HTTP transport inside container:
-docker run -d -p 3000:3000 -e TRANSPORT=http -e PORT=3000 -e SEARXNG_INSTANCE_URL=http://host.docker.internal:8888 searxng-mcp-bridge
+docker run -d -p 8081:8081 -e TRANSPORT=http -e PORT=8081 -e SEARXNG_INSTANCE_URL=http://localhost:8888 searxng-mcp-bridge
 ```
 
-Note: when containerized set `HOST=0.0.0.0` or rely on the default exposed port mapping.
+Note: when containerized set `HOST=0.0.0.0` or rely on the default exposed port mapping. Port 8081 is used for Smithery deployment compatibility.
 
 ## Usage
 
-Once configured, you can instruct your MCP client (like Roo) to use the tool unchanged. For STDIO-based clients, no configuration change is required. For Smithery-managed installs, set `transport: "http"` in the Smithery config to switch to HTTP.
+**STDIO Clients**: Use the tool unchanged - no configuration changes required.
+
+**HTTP Clients**: Connect to `http://localhost:3000/mcp` (or your configured port) and send MCP JSON-RPC requests.
+
+**Smithery**: Smithery handles all configuration automatically.
 
 ## Development
 
@@ -123,8 +150,17 @@ Once configured, you can instruct your MCP client (like Roo) to use the tool unc
 * `npm run watch`: Watch for changes and rebuild automatically.
 * `npm run inspector`: Run the MCP inspector to test the server.
 
-## Notes & guarantees
+## Migration & Compatibility
 
-- No tool names, schemas, or IO shapes were changed by the HTTP transport support.
-- STDIO remains the default transport and behaves exactly as before; rollback to STDIO is a single env/flag change.
-- The HTTP transport is intentionally opt-in and configuration-driven to keep the change minimal and reversible.
+**Backward Compatibility**: 
+- STDIO remains the default transport - existing users need no changes
+- All tool names, parameters, and responses remain unchanged
+- Configuration is opt-in via environment variables
+
+**Migration to HTTP**:
+- Set `TRANSPORT=http` to enable HTTP transport
+- Configure `PORT` and `HOST` as needed
+- Update client to use HTTP endpoint instead of stdio
+
+**Rollback**:
+- Set `TRANSPORT=stdio` or omit the variable to return to stdio

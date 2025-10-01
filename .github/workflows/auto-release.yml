@@ -8,8 +8,7 @@ on:
 jobs:
   bump_version:
     if: |
-      github.event.pull_request.merged == true &&
-      github.actor == 'renovate[bot]'
+      github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     permissions:
       contents: write
