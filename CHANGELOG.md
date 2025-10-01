@@ -1,3 +1,16 @@
+## [0.9.16](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.9.15...v0.9.16) (2025-10-01)
+
+
+### Features
+
+* Enhance HTTP transport support and configuration ([d8ae141](https://github.com/nitish-raj/searxng-mcp-bridge/commit/d8ae1412c920282965a54a3438a7f5f1ed6f7c2f))
+* Enhance SearxNG Bridge with HTTP transport support and improved logging ([6075fa6](https://github.com/nitish-raj/searxng-mcp-bridge/commit/6075fa6fa39cfee259fb5be6097a7f888660b997))
+* Improve CORS configuration for enhanced security and development support ([9b107be](https://github.com/nitish-raj/searxng-mcp-bridge/commit/9b107be2044288c6614c3b9fed8d8af65b5ebb3f))
+* Update CORS configuration to reflect specific origins for credentialed requests ([6671f50](https://github.com/nitish-raj/searxng-mcp-bridge/commit/6671f50e21270df802124f6111c56be4ca1c8228))
+* Update server port and enhance CORS configuration for improved security ([e29b964](https://github.com/nitish-raj/searxng-mcp-bridge/commit/e29b964fca9b481537abafdf588783e57fe6e0b1))
+
+
+
 ## [0.9.15](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.9.13...v0.9.15) (2025-09-27)
 
 
