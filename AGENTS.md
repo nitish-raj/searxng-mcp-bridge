@@ -6,6 +6,8 @@
 - **Watch mode**: `npm run watch` - Auto-rebuild on file changes
 - **Test MCP server**: `npm run inspector` - Run MCP inspector to test server functionality
 - **Release**: `npm run release:patch|minor|major` - Version bump and changelog generation
+- **HTTP mode**: `npm run start:http` - Start server in HTTP streaming mode on localhost:3002
+- **Dev mode**: `npm run dev` - Run with tsx for development
 
 ## Code Style Guidelines
 
@@ -27,11 +29,25 @@
 - Return structured error responses with `isError: true` flag
 - Log errors to stderr with descriptive prefixes
 
+### HTTP Streaming Support
+- Supports both STDIO and HTTP streaming transports
+- HTTP transport implements MCP Streamable HTTP specification (2025-03-26)
+- Session management with `Mcp-Session-Id` headers
+- CORS configuration with configurable origins
+- Rate limiting (100 requests per 60 seconds per IP)
+- Optional bearer authentication for protected endpoints
+- Graceful shutdown with proper cleanup
+
 ### Dependencies
-- Core: `@modelcontextprotocol/sdk`, `axios`
+- Core: `@modelcontextprotocol/sdk`, `axios`, `express`, `cors`, `express-rate-limit`
 - No testing framework currently configured
 - No linting tools configured (consider adding ESLint/Prettier)
 
 ### Environment Variables
-- `SEARXNG_INSTANCE_URL` (required): URL of SearXNG instance
+- `SEARXNG_INSTANCE_URL` (required): URL of SearXNG instance (e.g., `http://localhost:8080`)
 - `SEARXNG_BRIDGE_DEBUG` (optional): Enable debug logging
+- `TRANSPORT` (optional): Transport mode (`stdio` or `http`, default: `stdio`)
+- `PORT` (optional): HTTP server port (default: `3000`, use `3002` for development)
+- `HOST` (optional): HTTP server host (default: `127.0.0.1`)
+- `MCP_HTTP_BEARER` (optional): Bearer token for HTTP authentication
+- `CORS_ORIGIN` (optional): CORS origin configuration (default: `localhost:3002` for development, reflects specific origins in production for credentialed requests)

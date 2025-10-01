@@ -20,5 +20,8 @@ COPY . .
 # Set node environment
 ENV NODE_ENV=production
 
+# Expose port 8081 for Smithery HTTP transport
+EXPOSE 8081
+
 # Default command to start the MCP server
 CMD ["node", "build/index.js"]
