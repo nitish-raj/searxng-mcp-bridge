@@ -81,7 +81,7 @@ This is a Model Context Protocol (MCP) server that acts as a bridge to a [SearXN
 
 **Security Notes**:
 - CORS uses secure whitelist in development (localhost:3002 only)
-- Production uses wildcard `*` for Smithery compatibility (as per Smithery docs)
+- Production reflects specific origins for credentialed requests (CORS-compliant)
 - Set `CORS_ORIGIN` to customize allowed origins for your use case
 - Set `TRANSPORT=stdio` to revert to stdio mode
 

@@ -434,19 +434,22 @@ class SearxngBridgeServer {
         
         app.use(cors({
          origin: (origin, callback) => {
-           // Allow requests with no Origin header (like mobile apps, curl)
+           // For credentialed requests, we cannot use wildcard
+           // Must reflect the actual origin or return specific allowed origins
            if (!origin) {
-             return callback(null, true);
+             // No origin header (curl, mobile apps) - allow but don't use credentials
+             return callback(null, false);
            }
            
            if (validateOrigin(origin, corsOrigin)) {
-             callback(null, true);
+             // Return the specific origin for credentialed requests
+             callback(null, origin);
            } else {
              redactLog(`[SearxNG Bridge] CORS blocked origin: ${origin}`);
              callback(new Error('Not allowed by CORS'));
            }
          },
-         credentials: true,
+         credentials: corsOrigin !== '*', // Only enable credentials for non-wildcard
          exposedHeaders: ['mcp-session-id', 'mcp-protocol-version'],
          allowedHeaders: ['Content-Type', 'Authorization', 'mcp-session-id'],
          methods: ['GET', 'POST', 'DELETE', 'OPTIONS']
@@ -512,15 +515,19 @@ class SearxngBridgeServer {
         const origin = req.headers.origin;
         
         // Validate origin for preflight requests
-        if (!origin || validateOrigin(origin, corsOrigin)) {
-          // Set origin based on corsOrigin configuration
-          if (corsOrigin === '*') {
-            res.header('Access-Control-Allow-Origin', '*');
-          } else if (!origin) {
-            res.header('Access-Control-Allow-Origin', corsOrigin === '*' ? '*' : corsOrigin);
-          } else {
-            res.header('Access-Control-Allow-Origin', origin);
-          }
+        if (!origin) {
+          // No origin header - allow without credentials
+          res.header('Access-Control-Allow-Origin', '*');
+          res.header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+          res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, mcp-session-id');
+          res.header('Access-Control-Expose-Headers', 'mcp-session-id, mcp-protocol-version');
+          res.status(200).send();
+          return;
+        }
+        
+        if (validateOrigin(origin, corsOrigin)) {
+          // For credentialed requests, must reflect specific origin
+          res.header('Access-Control-Allow-Origin', origin);
           res.header('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
           res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, mcp-session-id');
           res.header('Access-Control-Allow-Credentials', 'true');

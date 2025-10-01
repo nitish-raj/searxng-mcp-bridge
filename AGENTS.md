@@ -50,4 +50,4 @@
 - `PORT` (optional): HTTP server port (default: `3000`, use `3002` for development)
 - `HOST` (optional): HTTP server host (default: `127.0.0.1`)
 - `MCP_HTTP_BEARER` (optional): Bearer token for HTTP authentication
-- `CORS_ORIGIN` (optional): CORS origin configuration (default: `localhost:3002` for development, `*` for production/Smithery)
+- `CORS_ORIGIN` (optional): CORS origin configuration (default: `localhost:3002` for development, reflects specific origins in production for credentialed requests)
