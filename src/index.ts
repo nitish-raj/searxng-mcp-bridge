@@ -44,7 +44,9 @@ const isValidSearchArgs = (args: any): args is SearchArgs => {
   return true;
 };
 
-const SEARXNG_URL = process.env.SEARXNG_INSTANCE_URL;
+// For Smithery deployment, we'll handle configuration per-session
+// For direct deployment, use environment variable
+const DEFAULT_SEARXNG_URL = process.env.SEARXNG_INSTANCE_URL;
 const DEBUG_MODE = process.env.SEARXNG_BRIDGE_DEBUG === 'true';
 
 // Logging utility for redacting sensitive information
@@ -56,7 +58,7 @@ const redactLog = (message: string, ...args: any[]) => {
       .replace(/(mcp-session-id:\s*)[^\s]+/gi, '$1[REDACTED]')
       .replace(/(SEARXNG_INSTANCE_URL=)[^\s]+/g, '$1[REDACTED]');
     
-    console.log(redactedMessage, ...args);
+    console.error(redactedMessage, ...args);
   }
 };
 
@@ -68,11 +70,12 @@ const redactUrl = (url: string | undefined) => {
   return url || '';
 };
 
-if (!SEARXNG_URL) {
-  console.error('[SearxNG Bridge] ERROR: SEARXNG_INSTANCE_URL environment variable is not set.');
-  process.exit(1);
+// For direct deployment, validate environment variable at startup
+// For Smithery deployment, this will be handled per-session
+if (DEFAULT_SEARXNG_URL) {
+  console.error(`[SearxNG Bridge] Using default SearxNG instance URL from environment: ${redactUrl(DEFAULT_SEARXNG_URL)}`);
 } else {
-  console.log(`[SearxNG Bridge] Using SearxNG instance URL: ${redactUrl(SEARXNG_URL)}`);
+  console.error(`[SearxNG Bridge] No default SearxNG URL configured - will use per-session configuration for Smithery deployment`);
 }
 
 interface CacheEntry {
@@ -87,25 +90,26 @@ class SearxngBridgeServer {
   private readonly CACHE_TTL = 5 * 60 * 1000;
   private readonly MAX_RETRIES = 3;
   private readonly RETRY_DELAY = 1000;
+  private searxngUrl: string;
 
   private async validateSearxngConnection(): Promise<void> {
     try {
-      console.log(`[SearxNG Bridge] Validating connection to ${SEARXNG_URL}...`);
+      console.error(`[SearxNG Bridge] Validating connection to ${redactUrl(this.searxngUrl)}...`);
       const response = await this.axiosInstance.get('/search', {
         params: { q: 'connection_test', format: 'json' },
         timeout: 10000 // 10s for validation
       });
       
       if (response.status === 200 && response.data) {
-        console.log(`[SearxNG Bridge] ✅ Successfully connected to SearXNG instance`);
+        console.error(`[SearxNG Bridge] ✅ Successfully connected to SearXNG instance`);
       } else {
-        console.warn(`[SearxNG Bridge] ⚠️  SearXNG returned status: ${response.status}`);
+        console.error(`[SearxNG Bridge] ⚠️  SearXNG returned status: ${response.status}`);
       }
     } catch (error) {
-      console.error(`[SearxNG Bridge] ❌ Failed to connect to SearXNG instance at ${SEARXNG_URL}`);
+      console.error(`[SearxNG Bridge] ❌ Failed to connect to SearXNG instance at ${redactUrl(this.searxngUrl)}`);
       if (axios.isAxiosError(error)) {
         if (error.code === 'ECONNREFUSED') {
-          console.error(`[SearxNG Bridge] Connection refused - check if SearXNG is running at ${SEARXNG_URL}`);
+          console.error(`[SearxNG Bridge] Connection refused - check if SearXNG is running at ${redactUrl(this.searxngUrl)}`);
         } else if (error.code === 'ETIMEDOUT') {
           console.error(`[SearxNG Bridge] Connection timeout - SearXNG may be slow or unreachable`);
         } else if (error.response?.status === 404) {
@@ -139,7 +143,7 @@ class SearxngBridgeServer {
 
     const healthStatus = {
       status: searxngStatus === 'healthy' ? 'healthy' : 'degraded',
-      searxng_instance: SEARXNG_URL,
+      searxng_instance: this.searxngUrl,
       searxng_status: searxngStatus,
       response_time_ms: responseTime,
       cache_size: this.cache.size,
@@ -165,6 +169,13 @@ class SearxngBridgeServer {
       console.error('[Unhandled Rejection] at:', promise, 'reason:', reason);
     });
 
+    // Use environment variable (Smithery will set this)
+    this.searxngUrl = DEFAULT_SEARXNG_URL || '';
+    
+    if (!this.searxngUrl) {
+      throw new Error('SEARXNG_INSTANCE_URL environment variable is required.');
+    }
+
     this.server = new Server(
       {
         name: 'searxng-bridge',
@@ -180,7 +191,7 @@ class SearxngBridgeServer {
     );
 
     this.axiosInstance = axios.create({
-      baseURL: SEARXNG_URL,
+      baseURL: this.searxngUrl,
       timeout: 30000, // 30s timeout for slower instances
       headers: {
         // Add a common browser User-Agent to potentially avoid bot detection
@@ -328,26 +339,26 @@ class SearxngBridgeServer {
       }
 
       // All retries failed
-      let errorMessage = `Failed to fetch search results from SearxNG instance at ${SEARXNG_URL} after ${this.MAX_RETRIES} attempts.`;
+      let errorMessage = `Failed to fetch search results from SearxNG instance at ${redactUrl(this.searxngUrl)} after ${this.MAX_RETRIES} attempts.`;
       
       if (axios.isAxiosError(lastError)) {
         if (lastError.code === 'ECONNREFUSED') {
-          errorMessage = `Connection refused to SearXNG at ${SEARXNG_URL} - check if the instance is running and accessible`;
+          errorMessage = `Connection refused to SearXNG at ${redactUrl(this.searxngUrl)} - check if the instance is running and accessible`;
         } else if (lastError.code === 'ETIMEDOUT') {
-          errorMessage = `Connection timeout to SearXNG at ${SEARXNG_URL} - the instance may be slow or unreachable`;
+          errorMessage = `Connection timeout to SearXNG at ${redactUrl(this.searxngUrl)} - the instance may be slow or unreachable`;
         } else if (lastError.code === 'ENOTFOUND') {
-          errorMessage = `SearXNG instance not found at ${SEARXNG_URL} - check the URL configuration`;
+          errorMessage = `SearXNG instance not found at ${redactUrl(this.searxngUrl)} - check the URL configuration`;
         } else if (lastError.response?.status === 404) {
-          errorMessage = `SearXNG search endpoint not found at ${SEARXNG_URL}/search - verify instance configuration`;
+          errorMessage = `SearXNG search endpoint not found at ${redactUrl(this.searxngUrl)}/search - verify instance configuration`;
         } else if (lastError.response?.status === 503) {
           errorMessage = `SearXNG service unavailable (503) - the instance may be overloaded or down`;
         } else if (lastError.response?.status) {
-          errorMessage = `SearXNG request error (${SEARXNG_URL}): HTTP ${lastError.response.status} - ${lastError.response.statusText}`;
+          errorMessage = `SearXNG request error (${redactUrl(this.searxngUrl)}): HTTP ${lastError.response.status} - ${lastError.response.statusText}`;
         } else {
-          errorMessage = `SearXNG request error (${SEARXNG_URL}): ${lastError.message}`;
+          errorMessage = `SearXNG request error (${redactUrl(this.searxngUrl)}): ${lastError.message}`;
         }
       } else if (lastError instanceof Error) {
-        errorMessage = `Unexpected error while contacting ${SEARXNG_URL}: ${lastError.message}`;
+        errorMessage = `Unexpected error while contacting ${redactUrl(this.searxngUrl)}: ${lastError.message}`;
       }
 
       return { content: [{ type: 'text', text: errorMessage }], isError: true as const };
@@ -478,14 +489,14 @@ class SearxngBridgeServer {
         if (sessionId && transports[sessionId]) {
           transport = transports[sessionId];
         } else if (!sessionId && req.body && typeof req.body === 'object' && req.body.method === 'initialize') {
-            transport = new StreamableHTTPServerTransport({
-              sessionIdGenerator: () => randomUUID(),
-              onsessioninitialized: (sid) => {
-                transports[sid] = transport;
-              },
-              enableDnsRebindingProtection: true, // Enable for security
-              allowedHosts: [`${HOST}:${PORT}`, `localhost:${PORT}`, '127.0.0.1:' + PORT]
-            });
+          transport = new StreamableHTTPServerTransport({
+            sessionIdGenerator: () => randomUUID(),
+            onsessioninitialized: (sid) => {
+              transports[sid] = transport;
+            },
+            enableDnsRebindingProtection: true, // Enable for security
+            allowedHosts: [`${HOST}:${PORT}`, `localhost:${PORT}`, '127.0.0.1:' + PORT]
+          });
           transport.onclose = () => {
             if (transport.sessionId) delete transports[transport.sessionId];
           };
@@ -540,8 +551,13 @@ class SearxngBridgeServer {
       });
 
       app.get('/mcp', handleSessionRequest);
-      app.get('/healthz', (req: express.Request, res: express.Response) => {
-        res.status(200).json({ status: 'ok', version: PACKAGE_VERSION });
+      app.get('/healthz', async (req: express.Request, res: express.Response) => {
+        const healthResult = await this.performHealthCheck();
+        res.status(200).json({ 
+          status: 'ok', 
+          version: PACKAGE_VERSION,
+          searxng_health: healthResult.isError ? 'unhealthy' : 'healthy'
+        });
       });
        app.delete('/mcp', handleSessionRequest);
  
@@ -585,5 +601,6 @@ class SearxngBridgeServer {
   }
 }
 
+// Create server instance - Smithery will set SEARXNG_INSTANCE_URL as environment variable
 const server = new SearxngBridgeServer();
 server.run().catch(console.error);

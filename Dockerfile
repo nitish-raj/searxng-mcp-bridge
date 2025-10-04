@@ -4,21 +4,24 @@ FROM node:lts-alpine
 # Set working directory
 WORKDIR /app
 
-# Copy necessary files for installing dependencies and building the project
-COPY package.json package-lock.json tsconfig.json ./
-COPY src ./src
+# Copy package files first for better Docker layer caching
+COPY package.json package-lock.json ./
 
-# Install dependencies without running prepare scripts
+# Install dependencies
 RUN npm ci --ignore-scripts
 
-# Build the project explicitly
+# Copy source code and config files
+COPY src ./src
+COPY tsconfig.json ./
+
+# Build the project
 RUN npm run build
 
-# Copy remaining files if needed
-COPY . .
-
-# Set node environment
+# Set environment variables for Smithery
 ENV NODE_ENV=production
+ENV TRANSPORT=http
+ENV PORT=8081
+ENV HOST=0.0.0.0
 
 # Expose port 8081 for Smithery HTTP transport
 EXPOSE 8081
