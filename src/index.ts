@@ -419,7 +419,7 @@ class SearxngBridgeServer {
               ? process.env.CORS_ORIGIN.split(',').map(origin => origin.trim()) 
               : process.env.CORS_ORIGIN)
           : process.env.NODE_ENV === 'production' 
-            ? '*' // Smithery requires wildcard for their deployment
+            ? '*' // Production wildcard
             : ['http://localhost:3002', 'http://127.0.0.1:3002']; // Development whitelist - only port 3002
         
         // CORS validation function

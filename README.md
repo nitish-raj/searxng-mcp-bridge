@@ -1,7 +1,7 @@
 # SearXNG MCP Bridge Server
 
 [![Release](https://github.com/nitish-raj/searxng-mcp-bridge/actions/workflows/release.yml/badge.svg)](https://github.com/nitish-raj/searxng-mcp-bridge/actions/workflows/release.yml)
-[![smithery badge](https://smithery.ai/badge/@nitish-raj/searxng-mcp-bridge)](https://smithery.ai/server/@nitish-raj/searxng-mcp-bridge)
+
 
 This is a Model Context Protocol (MCP) server that acts as a bridge to a [SearXNG](https://github.com/searxng/searxng) instance. It allows compatible clients to perform searches using a configured SearXNG instance via MCP tools.
 
@@ -26,8 +26,7 @@ This is a Model Context Protocol (MCP) server that acts as a bridge to a [SearXN
     # Using env variables (recommended)
      TRANSPORT=http PORT=3002 HOST=127.0.0.1 SEARXNG_INSTANCE_URL=http://localhost:8080 npx -y @nitish-raj/searxng-mcp-bridge
 
-   # Or use the CLI flag form
-   npx -y @nitish-raj/searxng-mcp-bridge --transport=http
+
 
    # Or run the built bundle
    TRANSPORT=http node build/index.js
@@ -44,16 +43,16 @@ This is a Model Context Protocol (MCP) server that acts as a bridge to a [SearXN
           "-y",
           "@nitish-raj/searxng-mcp-bridge"
           ],
-         "env": {
-           "SEARXNG_INSTANCE_URL": "YOUR_SEARXNG_INSTANCE_URL"
-         },
+          "env": {
+            "SEARXNG_INSTANCE_URL": "http://localhost:8080"
+          },
          "disabled": false
        }
      }
    }
    ```
 
-**Smithery Configuration**: When using Smithery, you can set `transport: "http"` in the Smithery config to run the bridge over HTTP instead of stdio. Smithery will set `TRANSPORT` in the process environment when launching the bridge.
+**HTTP Configuration**: Set `TRANSPORT=http` to run the bridge over HTTP instead of stdio. The transport mode can be configured via environment variables.
 
 ## Features
 
@@ -68,9 +67,9 @@ This is a Model Context Protocol (MCP) server that acts as a bridge to a [SearXN
 
 - `SEARXNG_INSTANCE_URL` — REQUIRED. The full URL of the SearXNG instance (e.g., `http://localhost:8080`).
  - `TRANSPORT` — Transport protocol: `stdio` (default) or `http`
- - `PORT` — HTTP server port. Default: `3000` (use `3002` for development, Smithery uses `8081`)
+ - `PORT` — HTTP server port. Default: `3000` (use `3002` for development)
  - `HOST` — Server bind address. Default: `127.0.0.1` (use `0.0.0.0` for containers)
- - `CORS_ORIGIN` — Comma-separated list of allowed origins for CORS. Default: localhost:3002 (development) or `*` (production for Smithery)
+ - `CORS_ORIGIN` — Comma-separated list of allowed origins for CORS. Default: localhost:3002 (development) or `*` (production)
  - `MCP_HTTP_BEARER` — Optional bearer token for HTTP authentication
  **HTTP Transport Features**:
 - Session management with `mcp-session-id` headers
@@ -107,35 +106,23 @@ curl -X POST http://localhost:3002/mcp \
 
 This returns a JSON-RPC response with the list of available tools (`search` and `health_check`).
 
-## Using Smithery
 
-Smithery provides container deployment with automatic HTTP transport configuration. Install via Smithery:
-
-```bash
-npx -y @smithery/cli install @nitish-raj/searxng-mcp-bridge --client claude
-```
-
-Smithery automatically handles:
-- Container deployment with HTTP transport
-- Port configuration (uses 8081 by default)
-- Environment variable management
-- Secure CORS configuration for web clients
 
 ## Docker
 
-The Dockerfile exposes port `8081` for Smithery compatibility (HTTP transport). To run the container and allow HTTP access:
+The Dockerfile exposes port `8081` for HTTP transport. To run the container and allow HTTP access:
 ```bash
 # Build (example)
 docker build -t searxng-mcp-bridge .
 
-# Run mapping port 8081 (Smithery default)
+# Run mapping port 8081
  docker run -d -p 8081:8081 --env SEARXNG_INSTANCE_URL=http://localhost:8080 --name searxng-mcp-bridge searxng-mcp-bridge
 
 # To run HTTP transport inside container:
  docker run -d -p 8081:8081 -e TRANSPORT=http -e PORT=8081 -e SEARXNG_INSTANCE_URL=http://localhost:8080 searxng-mcp-bridge
 ```
 
-Note: when containerized set `HOST=0.0.0.0` or rely on the default exposed port mapping. Port 8081 is used for Smithery deployment compatibility.
+Note: when containerized set `HOST=0.0.0.0` or rely on the default exposed port mapping.
 
 ## Usage
 
@@ -143,7 +130,7 @@ Note: when containerized set `HOST=0.0.0.0` or rely on the default exposed port 
 
 **HTTP Clients**: Connect to `http://localhost:3002/mcp` (development port) and send MCP JSON-RPC requests.
 
-**Smithery**: Smithery handles all configuration automatically.
+
 
 ## Development
 
@@ -151,6 +138,7 @@ Note: when containerized set `HOST=0.0.0.0` or rely on the default exposed port 
 * `npm run build`: Compile TypeScript to JavaScript.
 * `npm run watch`: Watch for changes and rebuild automatically.
 * `npm run inspector`: Run the MCP inspector to test the server.
+* `npm run start:http`: Start server in HTTP streaming mode on localhost:3002.
 
 ## Migration & Compatibility
 

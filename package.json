@@ -27,7 +27,6 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.20.1",
-    "@nitish-raj/searxng-mcp-bridge": "^0.9.15",
     "axios": "^1.8.4",
     "cors": "^2.8.5",
     "express": "^5.1.0",
