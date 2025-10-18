@@ -1,3 +1,7 @@
+# [0.10.0](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.9.23...v0.10.0) (2025-10-18)
+
+
+
 ## [0.9.23](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.9.22...v0.9.23) (2025-10-18)
 
 
@@ -254,6 +258,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+# [0.10.0](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.9.23...v0.10.0) (2025-10-18)
 
 # [0.5.0](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.4.4...v0.5.0) (2025-06-27)
 
