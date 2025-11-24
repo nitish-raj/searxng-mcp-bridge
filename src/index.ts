@@ -169,7 +169,6 @@ class SearxngBridgeServer {
       {
         name: 'searxng-bridge',
         version: PACKAGE_VERSION,
-        description: 'MCP Server for SearxNG Bridge',
       },
       {
         capabilities: {
