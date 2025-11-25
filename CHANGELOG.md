@@ -1,3 +1,12 @@
+## [0.10.6](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.10.5...v0.10.6) (2025-11-25)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @modelcontextprotocol/sdk to v1.22.0 ([#66](https://github.com/nitish-raj/searxng-mcp-bridge/issues/66)) ([430d429](https://github.com/nitish-raj/searxng-mcp-bridge/commit/430d42978632eb1161a9553d2eecca9962613750))
+
+
+
 ## [0.10.5](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.10.4...v0.10.5) (2025-11-25)
 
 
