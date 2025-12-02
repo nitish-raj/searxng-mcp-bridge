@@ -1,6 +1,6 @@
 {
   "name": "@nitish-raj/searxng-mcp-bridge",
-  "version": "0.10.8",
+  "version": "0.10.9",
   "description": "MCP Server for SearxNG Bridge",
   "private": false,
   "type": "module",
