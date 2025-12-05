@@ -1,3 +1,12 @@
+## [0.10.12](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.10.11...v0.10.12) (2025-12-05)
+
+
+### Bug Fixes
+
+* **deps:** update dependencies ([#73](https://github.com/nitish-raj/searxng-mcp-bridge/issues/73)) ([5ec17a8](https://github.com/nitish-raj/searxng-mcp-bridge/commit/5ec17a8731c5112fa2549be9c490134355affb52))
+
+
+
 ## [0.10.11](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.10.10...v0.10.11) (2025-12-05)
 
 
