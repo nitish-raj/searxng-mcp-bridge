@@ -33,7 +33,7 @@ jobs:
         ref: ${{ inputs.tag || github.ref }}
     
     - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v5
+      uses: actions/setup-node@v6
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
@@ -58,7 +58,7 @@ jobs:
         ref: ${{ inputs.tag || github.ref }}
     
     - name: Use Node.js
-      uses: actions/setup-node@v5
+      uses: actions/setup-node@v6
       with:
         node-version: '22.x'
         registry-url: 'https://registry.npmjs.org'
