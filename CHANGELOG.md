@@ -1,3 +1,12 @@
+## [0.10.19](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.10.18...v0.10.19) (2025-12-27)
+
+
+### Bug Fixes
+
+* **deps:** update dependency express-rate-limit to v8 ([a6b94b5](https://github.com/nitish-raj/searxng-mcp-bridge/commit/a6b94b5b6473d6aca2e9e8160bed7d9b75b96b96))
+
+
+
 ## [0.10.18](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.10.17...v0.10.18) (2025-12-26)
 
 
