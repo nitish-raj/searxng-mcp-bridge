@@ -5,13 +5,15 @@ on:
     types:
       - closed
 
+permissions:
+  contents: write
+  id-token: write
+
 jobs:
   bump_version:
     if: |
       github.event.pull_request.merged == true
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     outputs:
       tag: ${{ steps.bump_version.outputs.tag }}
     steps:
