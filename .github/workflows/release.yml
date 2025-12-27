@@ -104,7 +104,7 @@ jobs:
         echo "✅ Version consistency check passed"
     
     - name: Publish to npm with provenance
-      run: npm publish --provenance --access public
+      run: npm publish
       env:
         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     
