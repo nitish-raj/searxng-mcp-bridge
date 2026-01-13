@@ -1,3 +1,7 @@
+## [0.10.21](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.10.20...v0.10.21) (2026-01-13)
+
+
+
 ## [0.10.20](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.10.19...v0.10.20) (2026-01-08)
 
 
