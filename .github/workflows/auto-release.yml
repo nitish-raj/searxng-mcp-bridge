@@ -35,7 +35,8 @@ jobs:
         run: npm ci
 
       - name: Bump version
-        run: npm version patch -m "chore(release): %s"
+        run: |
+          npm version patch -m "chore(release): %s"
 
       - name: Push new version and tag
         run: |
