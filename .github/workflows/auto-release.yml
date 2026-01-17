@@ -7,15 +7,12 @@ on:
 
 permissions:
   contents: write
-  id-token: write
 
 jobs:
   bump_version:
     if: |
       github.event.pull_request.merged == true
     runs-on: ubuntu-latest
-    outputs:
-      tag: ${{ steps.bump_version.outputs.tag }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -38,22 +35,9 @@ jobs:
         run: npm ci
 
       - name: Bump version
-        id: bump_version
-        run: |
-          npm version patch -m "chore(release): %s"
-          echo "tag=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
+        run: npm version patch -m "chore(release): %s"
 
       - name: Push new version and tag
         run: |
           git push origin master
           git push origin --tags
-
-  call_release:
-    needs: bump_version
-    uses: ./.github/workflows/release.yml
-    permissions:
-      contents: write
-      id-token: write
-    with:
-      tag: ${{ needs.bump_version.outputs.tag }}
-    secrets: inherit
