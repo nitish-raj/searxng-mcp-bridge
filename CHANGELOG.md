@@ -2,6 +2,13 @@
 
 
 
+## [0.11.3](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.2...v0.11.3) (2026-02-22)
+
+
+### Bug Fixes
+
+* **release:** enhance auto-merge logic and improve error handling in release workflow ([#103](https://github.com/nitish-raj/searxng-mcp-bridge/issues/103)) ([72837d1](https://github.com/nitish-raj/searxng-mcp-bridge/commit/72837d13f263da43a911cac17275497bb04642d8))
+
 ## [0.11.2](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.1...v0.11.2) (2026-02-22)
 
 
