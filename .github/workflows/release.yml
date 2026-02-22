@@ -38,8 +38,9 @@ jobs:
         if: ${{ steps.release.outputs.prs_created == 'true' }}
         env:
           GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
           RELEASE_PR_NUMBER: ${{ fromJson(steps.release.outputs.pr).number }}
-        run: gh pr merge --auto --squash "${RELEASE_PR_NUMBER}"
+        run: gh pr merge --auto --squash --repo "${GITHUB_REPOSITORY}" "${RELEASE_PR_NUMBER}"
 
   publish:
     name: Publish Package
