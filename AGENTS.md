@@ -9,6 +9,32 @@
 - **HTTP mode**: `npm run start:http` - Start server in HTTP streaming mode on localhost:3002
 - **Dev mode**: `npm run dev` - Run with tsx for development
 
+## Git Workflow Requirements
+
+### Branch Creation
+- Never commit directly to `master`; always work on a feature branch.
+- Start new work from an up-to-date `master`:
+  - `git checkout master`
+  - `git pull --ff-only`
+  - `git checkout -b <type>/<short-kebab-description>`
+- Branch names must use lowercase kebab-case and one of these prefixes:
+  - `feat/`, `fix/`, `chore/`, `docs/`, `ci/`, `refactor/`, `perf/`
+- Example branch names:
+  - `fix/release-publish-skip`
+  - `chore/deps-axios-update`
+
+### Commit Requirements
+- Follow Conventional Commits: `<type>(<scope>): <summary>`.
+- Use clear, imperative commit summaries and avoid `wip`/`temp` commits.
+- Keep commits focused and atomic; each commit should build successfully.
+- Prefer these commit types for release automation compatibility:
+  - `feat`, `fix`, `perf`, `revert`, `build`, `ci`, `chore`
+
+### Pull Request Merge Practice
+- Prefer **Squash and merge** to keep history linear and preserve one Conventional Commit message.
+- Ensure the final squash commit title is also a valid Conventional Commit.
+- Avoid merge commits unless there is a specific reason to preserve full branch history.
+
 ## Code Style Guidelines
 
 ### TypeScript Configuration
