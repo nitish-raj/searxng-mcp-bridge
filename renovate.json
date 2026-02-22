@@ -11,6 +11,9 @@
     "before 5am on monday to friday"
   ],
   "dependencyDashboard": true,
+  "semanticCommits": "enabled",
+  "semanticCommitType": "fix",
+  "semanticCommitScope": "deps",
   "packageRules": [
     {
       "matchDepTypes": [
