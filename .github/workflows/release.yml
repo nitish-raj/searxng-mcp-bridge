@@ -55,6 +55,7 @@ jobs:
       id-token: write
     env:
       RELEASE_TAG: ${{ github.event.inputs.tag || github.event.client_payload.tag || github.ref_name }}
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     
     steps:
     - uses: actions/checkout@v6
@@ -122,10 +123,10 @@ jobs:
 
     - name: Publish to npm with token fallback
       id: publish_with_token
-      if: ${{ steps.publish_with_oidc.outcome == 'failure' && secrets.NPM_TOKEN != '' }}
+      if: ${{ steps.publish_with_oidc.outcome == 'failure' && env.NPM_TOKEN != '' }}
       run: npm publish --provenance
       env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        NODE_AUTH_TOKEN: ${{ env.NPM_TOKEN }}
 
     - name: Fail if publish did not succeed
       if: ${{ steps.publish_with_oidc.outcome == 'failure' && steps.publish_with_token.outcome != 'success' }}
