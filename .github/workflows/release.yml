@@ -39,8 +39,23 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          RELEASE_PR_NUMBER: ${{ fromJson(steps.release.outputs.pr).number }}
-        run: gh pr merge --auto --squash --repo "${GITHUB_REPOSITORY}" "${RELEASE_PR_NUMBER}"
+        run: |
+          PRS='${{ steps.release.outputs.prs }}'
+
+          if [ -z "$PRS" ] || [ "$PRS" = "[]" ]; then
+            echo "No PRs found. Skipping auto-merge."
+            exit 0
+          fi
+
+          PR_NUMBER=$(echo "$PRS" | jq -r '.[0].number')
+
+          if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" = "null" ]; then
+            echo "Invalid PR number."
+            exit 1
+          fi
+
+          echo "Enabling auto-merge for PR #$PR_NUMBER"
+          gh pr merge --auto --squash --repo "$GITHUB_REPOSITORY" "$PR_NUMBER"
 
   publish:
     name: Publish Package
@@ -50,6 +65,7 @@ jobs:
     permissions:
       contents: write
       id-token: write
+
     env:
       RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
       RELEASE_VERSION: ${{ needs.release-please.outputs.version }}
@@ -94,7 +110,7 @@ jobs:
 
           echo "✅ Version consistency check passed"
 
-      - name: Publish to npm with trusted publishing
+      - name: Publish to npm with trusted publishing (OIDC)
         id: publish_with_oidc
         continue-on-error: true
         run: npm publish
@@ -109,7 +125,7 @@ jobs:
       - name: Fail if publish did not succeed
         if: ${{ steps.publish_with_oidc.outcome == 'failure' && steps.publish_with_token.outcome != 'success' }}
         run: |
-          echo "::error::npm publish failed. Configure npm trusted publishing (OIDC) or set a valid granular NPM_TOKEN with write + bypass 2FA where required."
+          echo "::error::npm publish failed. Configure trusted publishing (OIDC) or provide a valid granular NPM_TOKEN with write permissions."
           exit 1
 
       - name: Create package tarball
@@ -117,5 +133,5 @@ jobs:
 
       - name: Upload package to GitHub release
         env:
-          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload "${RELEASE_TAG}" ./*.tgz --clobber
