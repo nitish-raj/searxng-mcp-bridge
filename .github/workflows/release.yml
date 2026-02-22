@@ -30,14 +30,14 @@ jobs:
         id: release
         uses: googleapis/release-please-action@v4
         with:
-          token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
       - name: Enable auto-merge for release PR
         if: ${{ steps.release.outputs.prs_created == 'true' }}
         env:
-          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           RELEASE_PR_NUMBER: ${{ fromJson(steps.release.outputs.pr).number }}
         run: gh pr merge --auto --squash --repo "${GITHUB_REPOSITORY}" "${RELEASE_PR_NUMBER}"
@@ -117,5 +117,5 @@ jobs:
 
       - name: Upload package to GitHub release
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
         run: gh release upload "${RELEASE_TAG}" ./*.tgz --clobber
