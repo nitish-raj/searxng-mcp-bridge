@@ -99,11 +99,11 @@ jobs:
 
         # Remove 'v' prefix if it exists
         VERSION=${VERSION_TAG#v}
-        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        echo "VERSION=$VERSION" >> "$GITHUB_ENV"
 
         # Extract version from package.json
         PKG_VERSION=$(node -p "require('./package.json').version")
-        echo "PKG_VERSION=$PKG_VERSION" >> $GITHUB_ENV
+        echo "PKG_VERSION=$PKG_VERSION" >> "$GITHUB_ENV"
 
         echo "Extracted version: $VERSION"
         echo "package.json version: $PKG_VERSION"

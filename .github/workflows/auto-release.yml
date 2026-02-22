@@ -51,7 +51,7 @@ jobs:
         id: bump_version
         run: |
           npm version patch -m "chore(release): %s"
-          echo "tag=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
+          echo "tag=$(git describe --tags --abbrev=0)" >> "$GITHUB_OUTPUT"
 
       - name: Push new version and tag
         run: |

@@ -21,6 +21,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    needs: workflow-lint
     
     strategy:
       matrix:
@@ -72,7 +73,7 @@ jobs:
       run: npm pack
     
     - name: List package contents
-      run: tar -tvf *.tgz
+      run: tar -tvf ./*.tgz
     
     - name: Validate package with dry-run publish
       run: npm publish --dry-run
