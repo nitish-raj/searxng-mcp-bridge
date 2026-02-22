@@ -1,0 +1,28 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "03:00"
+      timezone: "UTC"
+    # Renovate handles regular version updates in this repository.
+    # Keep Dependabot focused on security updates only.
+    open-pull-requests-limit: 0
+    commit-message:
+      prefix: "fix"
+      include: "scope"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:15"
+      timezone: "UTC"
+    # Renovate handles regular version updates in this repository.
+    # Keep Dependabot focused on security updates only.
+    open-pull-requests-limit: 0
+    commit-message:
+      prefix: "fix"
+      include: "scope"

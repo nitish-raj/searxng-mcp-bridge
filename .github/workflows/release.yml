@@ -2,153 +2,111 @@ name: Release
 
 on:
   push:
-    tags:
-      - 'v*'
-  repository_dispatch:
-    types:
-      - release-from-auto
+    branches:
+      - master
   workflow_dispatch:
-    inputs:
-      tag:
-        description: 'Tag to release (for example: v1.2.3)'
-        required: true
-        type: string
-        
+
 permissions:
   contents: write
+  pull-requests: write
+  issues: write
   id-token: write
 
-jobs:
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    env:
-      RELEASE_TAG: ${{ github.event.inputs.tag || github.event.client_payload.tag || github.ref_name }}
-    
-    strategy:
-      matrix:
-        node-version: [20.x, 22.x]
-    
-    steps:
-    - uses: actions/checkout@v6
-      with:
-        ref: ${{ env.RELEASE_TAG }}
-    
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v6
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Build project
-      run: npm run build
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
 
-  build-and-publish:
-    name: Build and Publish
+jobs:
+  release-please:
+    name: Prepare Release
     runs-on: ubuntu-latest
-    needs: test
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
+
+    steps:
+      - name: Run release-please
+        id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
+          release-type: node
+
+  publish:
+    name: Publish Package
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    runs-on: ubuntu-latest
     permissions:
       contents: write
       id-token: write
     env:
-      RELEASE_TAG: ${{ github.event.inputs.tag || github.event.client_payload.tag || github.ref_name }}
+      RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
+      RELEASE_VERSION: ${{ needs.release-please.outputs.version }}
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-    
+
     steps:
-    - uses: actions/checkout@v6
-      with:
-        ref: ${{ env.RELEASE_TAG }}
-    
-    - name: Use Node.js
-      uses: actions/setup-node@v6
-      with:
-        node-version: '22.x'
-        registry-url: 'https://registry.npmjs.org'
-        cache: 'npm'
+      - name: Checkout release tag
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: ${{ env.RELEASE_TAG }}
 
-    - name: Update npm
-      run: npm i -g npm@11.5.1
-    
-    - name: Install dependencies
-      run: npm ci
-    
-    - name: Build
-      run: npm run build
-    
-    - name: Extract and Validate Version
-      id: extract_version
-      run: |
-        VERSION_TAG="${RELEASE_TAG}"
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22.x'
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
 
-        if [[ -z "$VERSION_TAG" ]]; then
-          echo "::error::Could not determine release tag for event: ${{ github.event_name }}"
+      - name: Update npm
+        run: npm i -g npm@11.5.1
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Validate release version
+        run: |
+          VERSION="${RELEASE_VERSION}"
+          if [[ -z "$VERSION" ]]; then
+            VERSION="${RELEASE_TAG#v}"
+          fi
+
+          PKG_VERSION="$(node -p 'require("./package.json").version')"
+
+          if [[ "$VERSION" != "$PKG_VERSION" ]]; then
+            echo "::error::Release version ($VERSION) does not match package.json version ($PKG_VERSION)"
+            exit 1
+          fi
+
+          echo "✅ Version consistency check passed"
+
+      - name: Publish to npm with trusted publishing
+        id: publish_with_oidc
+        continue-on-error: true
+        run: npm publish
+
+      - name: Publish to npm with token fallback
+        id: publish_with_token
+        if: ${{ steps.publish_with_oidc.outcome == 'failure' && env.NPM_TOKEN != '' }}
+        run: npm publish --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ env.NPM_TOKEN }}
+
+      - name: Fail if publish did not succeed
+        if: ${{ steps.publish_with_oidc.outcome == 'failure' && steps.publish_with_token.outcome != 'success' }}
+        run: |
+          echo "::error::npm publish failed. Configure npm trusted publishing (OIDC) or set a valid granular NPM_TOKEN with write + bypass 2FA where required."
           exit 1
-        fi
 
-        if [[ "$VERSION_TAG" == refs/tags/* ]]; then
-          VERSION_TAG="${VERSION_TAG#refs/tags/}"
-        fi
+      - name: Create package tarball
+        run: npm pack
 
-        if [[ "$VERSION_TAG" != v* ]]; then
-          echo "::error::Release tag must start with 'v' (received: $VERSION_TAG)"
-          exit 1
-        fi
-
-        # Remove 'v' prefix if it exists
-        VERSION=${VERSION_TAG#v}
-        echo "VERSION=$VERSION" >> "$GITHUB_ENV"
-
-        # Extract version from package.json
-        PKG_VERSION=$(node -p "require('./package.json').version")
-        echo "PKG_VERSION=$PKG_VERSION" >> "$GITHUB_ENV"
-
-        echo "Extracted version: $VERSION"
-        echo "package.json version: $PKG_VERSION"
-
-        # Fail if versions don't match
-        if [ "$VERSION" != "$PKG_VERSION" ]; then
-          echo "::error::Tag version ($VERSION) does not match package.json version ($PKG_VERSION)"
-          exit 1
-        fi
-
-        echo "✅ Version consistency check passed"
-
-    - name: Publish to npm with trusted publishing
-      id: publish_with_oidc
-      continue-on-error: true
-      run: npm publish
-
-    - name: Publish to npm with token fallback
-      id: publish_with_token
-      if: ${{ steps.publish_with_oidc.outcome == 'failure' && env.NPM_TOKEN != '' }}
-      run: npm publish --provenance
-      env:
-        NODE_AUTH_TOKEN: ${{ env.NPM_TOKEN }}
-
-    - name: Fail if publish did not succeed
-      if: ${{ steps.publish_with_oidc.outcome == 'failure' && steps.publish_with_token.outcome != 'success' }}
-      run: |
-        echo "::error::npm publish failed. Configure npm trusted publishing (OIDC) or set a valid granular NPM_TOKEN with write + bypass 2FA where required."
-        exit 1
-
-    - name: Create package tarball
-      run: npm pack
-    
-    - name: Create GitHub Release
-      uses: softprops/action-gh-release@v2
-      with:
-        tag_name: "v${{ env.VERSION }}"
-        name: "v${{ env.VERSION }}"
-        body: |
-          ## @nitish-raj/searxng-mcp-bridge v${{ env.VERSION }}
-          
-          See [CHANGELOG.md](https://github.com/nitish-raj/searxng-mcp-bridge/blob/master/CHANGELOG.md) for details.
-        draft: false
-        prerelease: false
-        files: |
-          *.tgz
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload package to GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${RELEASE_TAG}" ./*.tgz --clobber
