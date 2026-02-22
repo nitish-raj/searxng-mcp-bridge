@@ -5,19 +5,32 @@ on:
     types:
       - closed
 
+concurrency:
+  group: auto-release-${{ github.event.pull_request.base.ref }}
+  cancel-in-progress: false
+
 permissions:
   contents: write
+  actions: write
 
 jobs:
   bump_version:
     if: |
-      github.event.pull_request.merged == true
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == github.event.repository.default_branch &&
+      (
+        github.event.pull_request.user.login == 'renovate[bot]' ||
+        github.event.pull_request.user.login == 'dependabot[bot]'
+      )
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.bump_version.outputs.tag }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          ref: ${{ github.event.pull_request.base.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
@@ -35,10 +48,26 @@ jobs:
         run: npm ci
 
       - name: Bump version
+        id: bump_version
         run: |
           npm version patch -m "chore(release): %s"
+          echo "tag=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
 
       - name: Push new version and tag
         run: |
-          git push origin master
-          git push origin --tags
+          git push origin "HEAD:${{ github.event.pull_request.base.ref }}"
+          git push origin "${{ steps.bump_version.outputs.tag }}"
+
+  trigger_release:
+    needs: bump_version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger release workflow
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api \
+            --method POST \
+            "/repos/${{ github.repository }}/dispatches" \
+            -f event_type='release-from-auto' \
+            -F client_payload[tag]='${{ needs.bump_version.outputs.tag }}'

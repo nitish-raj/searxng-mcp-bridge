@@ -4,6 +4,15 @@ on:
   push:
     tags:
       - 'v*'
+  repository_dispatch:
+    types:
+      - release-from-auto
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (for example: v1.2.3)'
+        required: true
+        type: string
         
 permissions:
   contents: write
@@ -13,6 +22,8 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: ${{ github.event.inputs.tag || github.event.client_payload.tag || github.ref_name }}
     
     strategy:
       matrix:
@@ -21,7 +32,7 @@ jobs:
     steps:
     - uses: actions/checkout@v6
       with:
-        ref: ${{ github.ref }}
+        ref: ${{ env.RELEASE_TAG }}
     
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v6
@@ -42,11 +53,13 @@ jobs:
     permissions:
       contents: write
       id-token: write
+    env:
+      RELEASE_TAG: ${{ github.event.inputs.tag || github.event.client_payload.tag || github.ref_name }}
     
     steps:
     - uses: actions/checkout@v6
       with:
-        ref: ${{ github.ref }}
+        ref: ${{ env.RELEASE_TAG }}
     
     - name: Use Node.js
       uses: actions/setup-node@v6
@@ -67,10 +80,19 @@ jobs:
     - name: Extract and Validate Version
       id: extract_version
       run: |
-        if [[ "${{ github.event_name }}" == "push" ]]; then
-          VERSION_TAG="${{ github.ref_name }}"
-        else
-          echo "::error::Unsupported event type for release workflow: ${{ github.event_name }}"
+        VERSION_TAG="${RELEASE_TAG}"
+
+        if [[ -z "$VERSION_TAG" ]]; then
+          echo "::error::Could not determine release tag for event: ${{ github.event_name }}"
+          exit 1
+        fi
+
+        if [[ "$VERSION_TAG" == refs/tags/* ]]; then
+          VERSION_TAG="${VERSION_TAG#refs/tags/}"
+        fi
+
+        if [[ "$VERSION_TAG" != v* ]]; then
+          echo "::error::Release tag must start with 'v' (received: $VERSION_TAG)"
           exit 1
         fi
 
@@ -92,9 +114,27 @@ jobs:
         fi
 
         echo "✅ Version consistency check passed"
-    
-    - name: Publish to npm with provenance
+
+    - name: Publish to npm with trusted publishing
+      id: publish_with_oidc
+      continue-on-error: true
       run: npm publish
+
+    - name: Publish to npm with token fallback
+      id: publish_with_token
+      if: ${{ steps.publish_with_oidc.outcome == 'failure' && secrets.NPM_TOKEN != '' }}
+      run: npm publish --provenance
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+    - name: Fail if publish did not succeed
+      if: ${{ steps.publish_with_oidc.outcome == 'failure' && steps.publish_with_token.outcome != 'success' }}
+      run: |
+        echo "::error::npm publish failed. Configure npm trusted publishing (OIDC) or set a valid granular NPM_TOKEN with write + bypass 2FA where required."
+        exit 1
+
+    - name: Create package tarball
+      run: npm pack
     
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
