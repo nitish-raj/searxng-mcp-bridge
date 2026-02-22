@@ -2,6 +2,20 @@
 
 
 
+## [0.11.1](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.0...v0.11.1) (2026-02-22)
+
+
+### Bug Fixes
+
+* **release:** specify repository in auto-merge command for release PRs ([1e52713](https://github.com/nitish-raj/searxng-mcp-bridge/commit/1e52713b5096af8a810de86626e968820ac367e7))
+* **release:** specify repository in auto-merge command for release PRs ([84bb0d4](https://github.com/nitish-raj/searxng-mcp-bridge/commit/84bb0d45646115a74ab3566004106c8c76ce2b39))
+
+
+### Continuous Integration
+
+* **release:** auto-merge release PRs and drop component prefix ([84c43d9](https://github.com/nitish-raj/searxng-mcp-bridge/commit/84c43d95638209d21c88d651cc7595bf671508c4))
+* **release:** auto-merge release PRs and simplify release name ([f175e4f](https://github.com/nitish-raj/searxng-mcp-bridge/commit/f175e4f0a5db25866edbdaf311ceb65f9888437a))
+
 ## [0.11.0](https://github.com/nitish-raj/searxng-mcp-bridge/compare/searxng-mcp-bridge-v0.10.34...searxng-mcp-bridge-v0.11.0) (2026-02-22)
 
 
