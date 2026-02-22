@@ -2,6 +2,14 @@
 
 
 
+## [0.11.2](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.1...v0.11.2) (2026-02-22)
+
+
+### Bug Fixes
+
+* **release:** use RELEASE_PLEASE_TOKEN consistently for GitHub operations ([c438742](https://github.com/nitish-raj/searxng-mcp-bridge/commit/c438742e4078cd3950fb455ee4abceaeff8ba6d5))
+* **release:** use RELEASE_PLEASE_TOKEN consistently for GitHub operations ([b855b27](https://github.com/nitish-raj/searxng-mcp-bridge/commit/b855b2757216c67d8aa71bababe8a44298c879f2))
+
 ## [0.11.1](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.0...v0.11.1) (2026-02-22)
 
 
