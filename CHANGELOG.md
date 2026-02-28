@@ -2,6 +2,14 @@
 
 
 
+## [0.11.5](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.4...v0.11.5) (2026-02-28)
+
+
+### Bug Fixes
+
+* **deps:** bump hono from 4.12.1 to 4.12.2 in the npm_and_yarn group across 1 directory ([f1e029e](https://github.com/nitish-raj/searxng-mcp-bridge/commit/f1e029e38444739f4278798af2876c06fd8b44fe))
+* **deps:** bump hono in the npm_and_yarn group across 1 directory ([c2ce4c0](https://github.com/nitish-raj/searxng-mcp-bridge/commit/c2ce4c01a4b78b6aeddd44a7692f00c676365015))
+
 ## [0.11.4](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.3...v0.11.4) (2026-02-26)
 
 
