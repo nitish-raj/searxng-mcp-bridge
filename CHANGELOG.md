@@ -2,6 +2,13 @@
 
 
 
+## [0.11.7](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.6...v0.11.7) (2026-03-03)
+
+
+### Miscellaneous Chores
+
+* **deps:** update dependency axios to v1.13.6 ([#112](https://github.com/nitish-raj/searxng-mcp-bridge/issues/112)) ([4d750d0](https://github.com/nitish-raj/searxng-mcp-bridge/commit/4d750d055171b3a4c14b6b141830f9cc50b52474))
+
 ## [0.11.6](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.5...v0.11.6) (2026-03-01)
 
 
