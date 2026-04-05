@@ -22,18 +22,14 @@ jobs:
   test:
     runs-on: ubuntu-latest
     needs: workflow-lint
-    
-    strategy:
-      matrix:
-        node-version: [25.x]
-    
+
     steps:
     - uses: actions/checkout@v6
     
-    - name: Use Node.js ${{ matrix.node-version }}
+    - name: Use Node.js 25.x
       uses: actions/setup-node@v6
       with:
-        node-version: ${{ matrix.node-version }}
+        node-version: '25.x'
         cache: 'npm'
     
     - name: Install dependencies
@@ -45,7 +41,7 @@ jobs:
     - name: Upload build artifacts
       uses: actions/upload-artifact@v6
       with:
-        name: build-${{ matrix.node-version }}
+        name: build-node-25
         path: build/
         retention-days: 7
 
