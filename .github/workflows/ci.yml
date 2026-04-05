@@ -43,7 +43,7 @@ jobs:
       run: npm run build
     
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@v6
       with:
         name: build-${{ matrix.node-version }}
         path: build/
@@ -74,12 +74,31 @@ jobs:
     
     - name: List package contents
       run: tar -tvf ./*.tgz
+
+    - name: Check whether version is already published
+      id: npm_version
+      run: |
+        PACKAGE_NAME="$(node -p 'require("./package.json").name')"
+        PACKAGE_VERSION="$(node -p 'require("./package.json").version')"
+
+        if npm view "${PACKAGE_NAME}@${PACKAGE_VERSION}" version >/dev/null 2>&1; then
+          echo "published=true" >> "$GITHUB_OUTPUT"
+          echo "Version ${PACKAGE_VERSION} is already published on npm."
+        else
+          echo "published=false" >> "$GITHUB_OUTPUT"
+          echo "Version ${PACKAGE_VERSION} is not published yet."
+        fi
     
     - name: Validate package with dry-run publish
+      if: steps.npm_version.outputs.published != 'true'
       run: npm publish --dry-run
+
+    - name: Skip dry-run publish for existing version
+      if: steps.npm_version.outputs.published == 'true'
+      run: echo "Skipping npm publish --dry-run because this package version already exists on npm."
     
     - name: Upload package artifact
-      uses: actions/upload-artifact@v7
+      uses: actions/upload-artifact@v6
       with:
         name: npm-package
         path: "*.tgz"
