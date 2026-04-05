@@ -60,7 +60,6 @@ jobs:
       uses: actions/setup-node@v6
       with:
         node-version: '25.x'
-        registry-url: 'https://registry.npmjs.org'
         cache: 'npm'
     
     - name: Install dependencies
@@ -70,36 +69,47 @@ jobs:
       run: npm run build
     
     - name: Pack package
-      run: npm pack
+      run: npm pack --json > pack-output.json
     
     - name: List package contents
-      run: tar -tvf ./*.tgz
-
-    - name: Check whether version is already published
-      id: npm_version
       run: |
+        TARBALL="$(node -p 'require("./pack-output.json")[0].filename')"
+        tar -tvf "$TARBALL"
+
+    - name: Validate packaged tarball in a clean install
+      run: |
+        TARBALL="$(node -p 'require("./pack-output.json")[0].filename')"
+        TMPDIR="$(mktemp -d)"
         PACKAGE_NAME="$(node -p 'require("./package.json").name')"
         PACKAGE_VERSION="$(node -p 'require("./package.json").version')"
+        PACKAGE_BIN="$(node -p 'Object.values(require("./package.json").bin)[0]')"
 
-        if npm view "${PACKAGE_NAME}@${PACKAGE_VERSION}" version >/dev/null 2>&1; then
-          echo "published=true" >> "$GITHUB_OUTPUT"
-          echo "Version ${PACKAGE_VERSION} is already published on npm."
-        else
-          echo "published=false" >> "$GITHUB_OUTPUT"
-          echo "Version ${PACKAGE_VERSION} is not published yet."
-        fi
-    
-    - name: Validate package with dry-run publish
-      if: steps.npm_version.outputs.published != 'true'
-      run: npm publish --dry-run
+        pushd "$TMPDIR" >/dev/null
+        npm init -y >/dev/null 2>&1
+        npm install --ignore-scripts "${GITHUB_WORKSPACE}/${TARBALL}" >/dev/null
 
-    - name: Skip dry-run publish for existing version
-      if: steps.npm_version.outputs.published == 'true'
-      run: echo "Skipping npm publish --dry-run because this package version already exists on npm."
+        PACKAGE_NAME="$PACKAGE_NAME" PACKAGE_VERSION="$PACKAGE_VERSION" PACKAGE_BIN="$PACKAGE_BIN" node - <<'NODE'
+        const fs = require('fs');
+        const path = require('path');
+
+        const packageRoot = path.join(process.cwd(), 'node_modules', ...process.env.PACKAGE_NAME.split('/'));
+        const installedPackage = JSON.parse(fs.readFileSync(path.join(packageRoot, 'package.json'), 'utf8'));
+        const binPath = path.join(packageRoot, process.env.PACKAGE_BIN);
+
+        if (installedPackage.version !== process.env.PACKAGE_VERSION) {
+          throw new Error(`Expected version ${process.env.PACKAGE_VERSION}, got ${installedPackage.version}`);
+        }
+
+        fs.accessSync(binPath, fs.constants.F_OK);
+        console.log(`Validated packaged install for ${process.env.PACKAGE_NAME}@${installedPackage.version}`);
+        NODE
+        popd >/dev/null
     
     - name: Upload package artifact
       uses: actions/upload-artifact@v6
       with:
         name: npm-package
-        path: "*.tgz"
+        path: |
+          *.tgz
+          pack-output.json
         retention-days: 7
