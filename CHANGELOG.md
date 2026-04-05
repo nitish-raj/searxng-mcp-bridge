@@ -2,6 +2,13 @@
 
 
 
+## [0.11.11](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.10...v0.11.11) (2026-04-05)
+
+
+### Miscellaneous Chores
+
+* **node:** target Node 25 and fix actions ([#123](https://github.com/nitish-raj/searxng-mcp-bridge/issues/123)) ([734c10c](https://github.com/nitish-raj/searxng-mcp-bridge/commit/734c10ce363c539c9565c9872b7f5ce0765e9286))
+
 ## [0.11.10](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.9...v0.11.10) (2026-03-10)
 
 
