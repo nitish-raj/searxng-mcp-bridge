@@ -5,6 +5,11 @@
 
 This is a Model Context Protocol (MCP) server that acts as a bridge to a [SearXNG](https://github.com/searxng/searxng) instance. It allows compatible clients to perform searches using a configured SearXNG instance via MCP tools.
 
+## Requirements
+
+- Node.js 25.x
+- npm 11.x or newer
+
 ## Quick Start (Using from npm)
 
 1. **Set up a SearXNG instance**:
