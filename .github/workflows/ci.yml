@@ -14,20 +14,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v6.0.1
 
     - name: Lint GitHub Actions workflows
-      uses: rhysd/actionlint@v1.7.11
+      uses: rhysd/actionlint@v1.7.8
 
   test:
     runs-on: ubuntu-latest
     needs: workflow-lint
 
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v6.0.1
     
     - name: Use Node.js 25.x
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@v6.1.0
       with:
         node-version: '25.x'
         cache: 'npm'
@@ -39,7 +39,7 @@ jobs:
       run: npm run build
     
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v6.0.0
       with:
         name: build-node-25
         path: build/
@@ -50,10 +50,10 @@ jobs:
     needs: test
     
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v6.0.1
     
     - name: Use Node.js
-      uses: actions/setup-node@v6
+      uses: actions/setup-node@v6.1.0
       with:
         node-version: '25.x'
         cache: 'npm'
@@ -102,7 +102,7 @@ jobs:
         popd >/dev/null
     
     - name: Upload package artifact
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v6.0.0
       with:
         name: npm-package
         path: |
