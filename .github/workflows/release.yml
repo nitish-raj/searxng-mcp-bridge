@@ -5,9 +5,6 @@ on:
     branches:
       - master
   workflow_dispatch:
-  release:
-    types:
-      - published
 
 permissions:
   contents: write
@@ -21,88 +18,68 @@ concurrency:
 
 jobs:
   release-please:
-    if: ${{ github.event_name != 'release' }}
     name: Prepare Release
     runs-on: ubuntu-latest
-    env:
-      TARGET_BRANCH: ${{ github.event.repository.default_branch }}
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6.0.1
-
-      - name: Use Node.js
-        uses: actions/setup-node@v6.1.0
+      - name: Run release-please
+        id: release
+        uses: googleapis/release-please-action@v4
         with:
-          node-version: '25.x'
-          cache: 'npm'
-
-      - name: Run release-please release-pr
-        env:
-          RELEASE_PLEASE_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-        run: |
-          npx --yes release-please@17.3.0 release-pr \
-            --token="$RELEASE_PLEASE_TOKEN" \
-            --repo-url="$GITHUB_REPOSITORY" \
-            --target-branch="$TARGET_BRANCH" \
-            --config-file=release-please-config.json \
-            --manifest-file=.release-please-manifest.json
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
 
       - name: Enable auto-merge for release PR
+        if: ${{ steps.release.outputs.prs_created == 'true' }}
         env:
           GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
-          PRS="$(gh pr list \
-            --repo "$GITHUB_REPOSITORY" \
-            --search "is:open is:pr label:\"autorelease: pending\" base:${TARGET_BRANCH}" \
-            --json number \
-            --jq '.[].number')"
+          PRS='${{ steps.release.outputs.prs }}'
 
-          if [ -z "$PRS" ]; then
+          if [ -z "$PRS" ] || [ "$PRS" = "[]" ]; then
             echo "No PRs found. Skipping auto-merge."
             exit 0
           fi
 
-          for PR_NUMBER in $PRS; do
-            echo "Enabling auto-merge for PR #$PR_NUMBER"
-            gh pr merge --auto --squash --repo "$GITHUB_REPOSITORY" "$PR_NUMBER"
-          done
+          PR_NUMBER=$(echo "$PRS" | jq -r '.[0].number')
 
-      - name: Run release-please github-release
-        env:
-          RELEASE_PLEASE_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-        run: |
-          npx --yes release-please@17.3.0 github-release \
-            --token="$RELEASE_PLEASE_TOKEN" \
-            --repo-url="$GITHUB_REPOSITORY" \
-            --target-branch="$TARGET_BRANCH" \
-            --config-file=release-please-config.json \
-            --manifest-file=.release-please-manifest.json
+          if [ -z "$PR_NUMBER" ] || [ "$PR_NUMBER" = "null" ]; then
+            echo "Invalid PR number."
+            exit 1
+          fi
+
+          echo "Enabling auto-merge for PR #$PR_NUMBER"
+          gh pr merge --auto --squash --repo "$GITHUB_REPOSITORY" "$PR_NUMBER"
 
   publish:
     name: Publish Package
-    if: ${{ github.event_name == 'release' && github.event.action == 'published' }}
+    needs: release-please
+    if: ${{ needs.release-please.outputs.release_created == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
       id-token: write
 
     env:
-      RELEASE_TAG: ${{ github.event.release.tag_name }}
+      RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
+      RELEASE_VERSION: ${{ needs.release-please.outputs.version }}
       NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
     steps:
       - name: Checkout release tag
-        uses: actions/checkout@v6.0.1
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           ref: ${{ env.RELEASE_TAG }}
 
       - name: Use Node.js
-        uses: actions/setup-node@v6.1.0
+        uses: actions/setup-node@v6
         with:
           node-version: '25.x'
           registry-url: 'https://registry.npmjs.org'
@@ -119,7 +96,10 @@ jobs:
 
       - name: Validate release version
         run: |
-          VERSION="${RELEASE_TAG#v}"
+          VERSION="${RELEASE_VERSION}"
+          if [[ -z "$VERSION" ]]; then
+            VERSION="${RELEASE_TAG#v}"
+          fi
 
           PKG_VERSION="$(node -p 'require("./package.json").version')"
 
