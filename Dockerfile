@@ -1,5 +1,5 @@
 # Dockerfile for SearXNG MCP Bridge
-FROM node:lts-alpine
+FROM node:25-alpine
 
 # Set working directory
 WORKDIR /app
