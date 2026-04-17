@@ -2,6 +2,13 @@
 
 
 
+## [0.11.12](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.11...v0.11.12) (2026-04-17)
+
+
+### Miscellaneous Chores
+
+* **deps:** update rhysd/actionlint action to v1.7.12 ([#129](https://github.com/nitish-raj/searxng-mcp-bridge/issues/129)) ([4e77f12](https://github.com/nitish-raj/searxng-mcp-bridge/commit/4e77f12d95e39395532e86c4d0235bcdc110d1fe))
+
 ## [0.11.11](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.10...v0.11.11) (2026-04-05)
 
 
