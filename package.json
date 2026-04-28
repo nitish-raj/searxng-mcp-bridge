@@ -38,7 +38,7 @@
     "@types/node": "^24.0.0",
     "conventional-changelog-cli": "^5.0.0",
     "tsx": "^4.20.5",
-    "typescript": "^5.9.2"
+    "typescript": "^6.0.0"
   },
   "author": "nitish-raj",
   "license": "MIT",
