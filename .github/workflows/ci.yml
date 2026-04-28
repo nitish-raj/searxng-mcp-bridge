@@ -39,7 +39,7 @@ jobs:
       run: npm run build
     
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: build-node-25
         path: build/
@@ -102,7 +102,7 @@ jobs:
         popd >/dev/null
     
     - name: Upload package artifact
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: npm-package
         path: |
