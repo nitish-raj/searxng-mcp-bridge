@@ -2,6 +2,13 @@
 
 
 
+## [0.11.17](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.16...v0.11.17) (2026-04-28)
+
+
+### Miscellaneous Chores
+
+* **deps:** update dependency express-rate-limit to v8.4.1 ([#140](https://github.com/nitish-raj/searxng-mcp-bridge/issues/140)) ([3f6f8cf](https://github.com/nitish-raj/searxng-mcp-bridge/commit/3f6f8cfdd8d5869987fc81656befef9d4e5b2169))
+
 ## [0.11.16](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.15...v0.11.16) (2026-04-24)
 
 
