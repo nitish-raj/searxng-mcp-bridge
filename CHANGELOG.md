@@ -2,6 +2,13 @@
 
 
 
+## [0.11.20](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.19...v0.11.20) (2026-05-13)
+
+
+### Miscellaneous Chores
+
+* **deps:** update dependency @types/node to v24.12.4 ([#146](https://github.com/nitish-raj/searxng-mcp-bridge/issues/146)) ([6a648a9](https://github.com/nitish-raj/searxng-mcp-bridge/commit/6a648a9f09093e6c0ee1a1bede2ab2cf78e407d0))
+
 ## [0.11.19](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.18...v0.11.19) (2026-05-08)
 
 
