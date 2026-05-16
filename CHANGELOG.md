@@ -2,6 +2,13 @@
 
 
 
+## [0.11.24](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.23...v0.11.24) (2026-05-16)
+
+
+### Miscellaneous Chores
+
+* simplify renovate configuration by removing unnecessary rules … ([#153](https://github.com/nitish-raj/searxng-mcp-bridge/issues/153)) ([05d920a](https://github.com/nitish-raj/searxng-mcp-bridge/commit/05d920a3f174bd90a44dad44a726289a3b8acd1f))
+
 ## [0.11.23](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.22...v0.11.23) (2026-05-16)
 
 
