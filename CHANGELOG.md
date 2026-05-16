@@ -2,6 +2,48 @@
 
 
 
+## [0.11.24](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.23...v0.11.24) (2026-05-16)
+
+
+### Miscellaneous Chores
+
+* simplify renovate configuration by removing unnecessary rules … ([#153](https://github.com/nitish-raj/searxng-mcp-bridge/issues/153)) ([05d920a](https://github.com/nitish-raj/searxng-mcp-bridge/commit/05d920a3f174bd90a44dad44a726289a3b8acd1f))
+
+## [0.11.23](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.22...v0.11.23) (2026-05-16)
+
+
+### Miscellaneous Chores
+
+* **deps:** update googleapis/release-please-action action to v5 ([#137](https://github.com/nitish-raj/searxng-mcp-bridge/issues/137)) ([88e497c](https://github.com/nitish-raj/searxng-mcp-bridge/commit/88e497ca9d3a268827afa430e6e1d2fce4042c84))
+
+## [0.11.22](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.21...v0.11.22) (2026-05-16)
+
+
+### Miscellaneous Chores
+
+* **deps:** update dependency typescript to v6 ([#121](https://github.com/nitish-raj/searxng-mcp-bridge/issues/121)) ([9b3bb0e](https://github.com/nitish-raj/searxng-mcp-bridge/commit/9b3bb0eb9506847e02d5bb723d3aa7a6e62ac9d3))
+
+## [0.11.21](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.20...v0.11.21) (2026-05-15)
+
+
+### Miscellaneous Chores
+
+* **deps:** update dependencies ([#148](https://github.com/nitish-raj/searxng-mcp-bridge/issues/148)) ([0af6f57](https://github.com/nitish-raj/searxng-mcp-bridge/commit/0af6f57f3780232831ade857187ac9686fd52865))
+
+## [0.11.20](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.19...v0.11.20) (2026-05-13)
+
+
+### Miscellaneous Chores
+
+* **deps:** update dependency @types/node to v24.12.4 ([#146](https://github.com/nitish-raj/searxng-mcp-bridge/issues/146)) ([6a648a9](https://github.com/nitish-raj/searxng-mcp-bridge/commit/6a648a9f09093e6c0ee1a1bede2ab2cf78e407d0))
+
+## [0.11.19](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.18...v0.11.19) (2026-05-08)
+
+
+### Miscellaneous Chores
+
+* **deps:** update dependency express-rate-limit to v8.5.1 ([#144](https://github.com/nitish-raj/searxng-mcp-bridge/issues/144)) ([ce4646f](https://github.com/nitish-raj/searxng-mcp-bridge/commit/ce4646f395475cbf92cd192bec8ee52d08ae1bc9))
+
 ## [0.11.18](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.17...v0.11.18) (2026-05-06)
 
 

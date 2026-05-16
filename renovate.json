@@ -8,52 +8,40 @@
     "renovate"
   ],
   "schedule": [
-    "before 5am on monday to friday"
+    "before 5am on monday"
   ],
   "dependencyDashboard": true,
   "semanticCommits": "enabled",
   "semanticCommitType": "fix",
   "semanticCommitScope": "deps",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": [
+      "before 5am on monday"
+    ],
+    "automerge": true,
+    "automergeType": "branch"
+  },
   "packageRules": [
     {
-      "matchDepTypes": [
-        "devDependencies"
-      ],
-      "groupName": "devDependencies",
-      "automerge": true,
-      "automergeType": "pr",
+      "description": "Group all non-major updates into a single PR",
       "matchUpdateTypes": [
         "minor",
-        "patch"
-      ]
-    },
-    {
-      "matchDepTypes": [
-        "dependencies"
+        "patch",
+        "pin",
+        "digest"
       ],
-      "groupName": "dependencies",
-      "automerge": true
+      "groupName": "all non-major dependencies",
+      "automerge": true,
+      "automergeType": "pr"
     },
     {
+      "description": "Group all major updates into a single PR (manual review)",
       "matchUpdateTypes": [
         "major"
       ],
+      "groupName": "all major dependencies",
       "automerge": false
-    },
-    {
-      "matchUpdateTypes": [
-        "minor",
-        "patch"
-      ],
-      "automerge": true,
-      "automergeType": "branch"
-    },
-    {
-      "groupName": "types packages",
-      "automerge": true,
-      "matchPackageNames": [
-        "/^@?types//"
-      ]
     }
   ]
 }
