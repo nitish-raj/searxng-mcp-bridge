@@ -14,33 +14,34 @@
   "semanticCommits": "enabled",
   "semanticCommitType": "fix",
   "semanticCommitScope": "deps",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": [
+      "before 5am on monday"
+    ],
+    "automerge": true,
+    "automergeType": "branch"
+  },
   "packageRules": [
     {
+      "description": "Group all non-major updates into a single PR",
       "matchUpdateTypes": [
         "minor",
         "patch",
+        "pin",
         "digest"
       ],
       "groupName": "all non-major dependencies",
-      "groupSlug": "all-minor-patch",
       "automerge": true,
       "automergeType": "pr"
     },
     {
+      "description": "Group all major updates into a single PR (manual review)",
       "matchUpdateTypes": [
         "major"
       ],
       "groupName": "all major dependencies",
-      "groupSlug": "all-major",
       "automerge": false
-    },
-    {
-      "groupName": "types packages",
-      "groupSlug": "types",
-      "automerge": true,
-      "matchPackageNames": [
-        "/^@?types//"
-      ]
     }
   ]
 }
