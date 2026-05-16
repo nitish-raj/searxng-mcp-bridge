@@ -2,6 +2,13 @@
 
 
 
+## [0.11.25](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.24...v0.11.25) (2026-05-16)
+
+
+### Bug Fixes
+
+* **deps:** bump the npm_and_yarn group across 1 directory with 2 updates ([#127](https://github.com/nitish-raj/searxng-mcp-bridge/issues/127)) ([b6d9bbf](https://github.com/nitish-raj/searxng-mcp-bridge/commit/b6d9bbf8780b863d11e26984230ed319078062ba))
+
 ## [0.11.24](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.23...v0.11.24) (2026-05-16)
 
 
