@@ -2,6 +2,13 @@
 
 
 
+## [0.11.23](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.22...v0.11.23) (2026-05-16)
+
+
+### Miscellaneous Chores
+
+* **deps:** update googleapis/release-please-action action to v5 ([#137](https://github.com/nitish-raj/searxng-mcp-bridge/issues/137)) ([88e497c](https://github.com/nitish-raj/searxng-mcp-bridge/commit/88e497ca9d3a268827afa430e6e1d2fce4042c84))
+
 ## [0.11.22](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.21...v0.11.22) (2026-05-16)
 
 
