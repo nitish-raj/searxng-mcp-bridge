@@ -2,6 +2,13 @@
 
 
 
+## [0.11.22](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.21...v0.11.22) (2026-05-16)
+
+
+### Miscellaneous Chores
+
+* **deps:** update dependency typescript to v6 ([#121](https://github.com/nitish-raj/searxng-mcp-bridge/issues/121)) ([9b3bb0e](https://github.com/nitish-raj/searxng-mcp-bridge/commit/9b3bb0eb9506847e02d5bb723d3aa7a6e62ac9d3))
+
 ## [0.11.21](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.20...v0.11.21) (2026-05-15)
 
 
