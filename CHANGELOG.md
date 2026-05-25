@@ -2,6 +2,13 @@
 
 
 
+## [0.11.27](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.26...v0.11.27) (2026-05-25)
+
+
+### Miscellaneous Chores
+
+* **deps:** update dependency tsx to v4.22.3 ([#160](https://github.com/nitish-raj/searxng-mcp-bridge/issues/160)) ([a6262a3](https://github.com/nitish-raj/searxng-mcp-bridge/commit/a6262a3a705c9ff66169aee2c9ff491c91f03cbe))
+
 ## [0.11.26](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.25...v0.11.26) (2026-05-18)
 
 
