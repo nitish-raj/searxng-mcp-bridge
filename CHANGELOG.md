@@ -2,6 +2,13 @@
 
 
 
+## [0.11.29](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.28...v0.11.29) (2026-05-30)
+
+
+### Miscellaneous Chores
+
+* **deps:** update actions/upload-artifact action to v7 ([#157](https://github.com/nitish-raj/searxng-mcp-bridge/issues/157)) ([3efc056](https://github.com/nitish-raj/searxng-mcp-bridge/commit/3efc056ff30f7c589b153ea5734a1d7f388e2245))
+
 ## [0.11.28](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.27...v0.11.28) (2026-05-26)
 
 
