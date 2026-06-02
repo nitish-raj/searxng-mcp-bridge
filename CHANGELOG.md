@@ -2,6 +2,13 @@
 
 
 
+## [0.11.31](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.30...v0.11.31) (2026-06-02)
+
+
+### Bug Fixes
+
+* **deps:** lock file maintenance ([#167](https://github.com/nitish-raj/searxng-mcp-bridge/issues/167)) ([68dbb0b](https://github.com/nitish-raj/searxng-mcp-bridge/commit/68dbb0be0c2fba9682a9734c42c8ed68144e4c67))
+
 ## [0.11.30](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.29...v0.11.30) (2026-06-01)
 
 
