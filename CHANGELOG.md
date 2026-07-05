@@ -2,6 +2,13 @@
 
 
 
+## [0.11.39](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.38...v0.11.39) (2026-07-05)
+
+
+### Miscellaneous Chores
+
+* **deps:** update actions/checkout action to v7 ([#178](https://github.com/nitish-raj/searxng-mcp-bridge/issues/178)) ([02f5e8c](https://github.com/nitish-raj/searxng-mcp-bridge/commit/02f5e8cd2db7f2c0a11791230aeb8374ac3784a8))
+
 ## [0.11.38](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.37...v0.11.38) (2026-06-30)
 
 
