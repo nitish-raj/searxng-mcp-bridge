@@ -2,6 +2,13 @@
 
 
 
+## [0.11.48](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.47...v0.11.48) (2026-08-10)
+
+
+### Miscellaneous Chores
+
+* **deps:** update all major dependencies to v7 ([#191](https://github.com/nitish-raj/searxng-mcp-bridge/issues/191)) ([8a3faad](https://github.com/nitish-raj/searxng-mcp-bridge/commit/8a3faad57b2acc989c6b0db7e8faf6dd430e1ae7))
+
 ## [0.11.47](https://github.com/nitish-raj/searxng-mcp-bridge/compare/v0.11.46...v0.11.47) (2026-08-10)
 
 
